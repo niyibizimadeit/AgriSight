@@ -140,19 +140,26 @@ All tasks organized by phase. Check off items as you complete them.
 
 ---
 
-## Phase 8 — Cluster Analysis
+## Phase 8 — Cluster Analysis ✅
 
-- [ ] Write `analysis/04_clustering.py`
-- [ ] Select clustering features: price, sales_volume, review_count, rating
-- [ ] Normalize features with `StandardScaler`
-- [ ] Use Elbow Method to determine optimal K (plot inertia for K=2–8)
-- [ ] Fit K-Means with chosen K (expect K=3 or 4)
-- [ ] Label clusters with business names (e.g. "Budget High-Volume", "Premium Niche", "Mid-range Stable", "Low Engagement")
-- [ ] Add `cluster_label` column to cleaned dataset and save
-- [ ] Plot: clustering result scatter plot (price vs sales, colored by cluster)
-- [ ] Plot: radar chart per cluster (avg values across all features)
-- [ ] Describe each cluster's characteristics in a findings note
-- [ ] Export charts to `analysis/charts/`
+- [x] Write `analysis/04_clustering.py` (K-Means, K=4)
+- [x] Select features: price, sales_volume, review_count, rating
+- [x] Normalize with `StandardScaler`
+- [x] Elbow Method → optimal K=4 → `12_elbow.png`
+- [x] Fit K-Means (K=4, random_state=42)
+- [x] Label clusters: Premium Niche, Mid-range Stable, Budget High-Volume, Low Engagement
+- [x] Add `cluster_label` → `data/cleaned/clustered_data.csv`
+- [x] Plot: cluster scatter → `13_cluster_scatter.png`
+- [x] Plot: radar chart → `14_radar_per_cluster.png`
+- [x] Export charts to `analysis/charts/`
+
+**Segment breakdown:**
+| Segment | Count | Price | Sales | Rating | Top Category |
+|---|---|---|---|---|---|
+| Mid-range Stable | 1,199 (41%) | ¥45 | 661 | 4.66 | 粮油 |
+| Low Engagement | 1,038 (36%) | ¥39 | 849 | 3.94 | 蔬菜 |
+| Premium Niche | 345 (12%) | ¥169 | 513 | 4.34 | 茶叶 |
+| Budget High-Volume | 339 (12%) | ¥32 | 3,048 | 4.29 | 蔬菜 |
 
 ---
 
