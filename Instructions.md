@@ -1008,12 +1008,38 @@ On the prediction page, after returning a prediction, also call a `/api/analysis
 
 ## Phase 13 — Report Writing
 
+> **Format: LaTeX → PDF**. Use `article` or `report` document class with `graphicx` for charts, `booktabs` for tables, and `hyperref` for links.
+
+### Setup
+
+```bash
+mkdir -p report/figures
+cp analysis/charts/*.png report/figures/
+```
+
+```latex
+% report/agrisight_report.tex
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}          % Chinese support
+\usepackage{graphicx,booktabs,hyperref,geometry,caption,float}
+\geometry{margin=2.5cm}
+\title{AgriSight — Agricultural E-commerce Sales Analysis \& Prediction System}
+\author{Your Name \\ Topic 3 — Medium Level}
+\date{\today}
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+% ... sections ...
+\end{document}
+```
+
 ### Required sections
 
 1. **Introduction** — project background, objectives, data source selection rationale
 2. **Data Collection** — tools used, scraping methodology, target URLs, record counts
 3. **Data Cleaning** — before/after table, each cleaning step explained, decisions justified
-4. **Descriptive Analysis** — key stats, charts, findings per category
+4. **Descriptive Analysis** — key stats, charts (`\includegraphics{figures/01_count_by_category.png}`), findings per category
 5. **Correlation Analysis** — heatmap interpretation, notable correlations, business meaning
 6. **Regression Analysis** — OLS summary interpretation (R², p-values), Random Forest results, which factors matter most
 7. **Cluster Analysis** — K selection rationale, cluster descriptions, business interpretation of each segment
@@ -1022,6 +1048,7 @@ On the prediction page, after returning a prediction, also call a `/api/analysis
 10. **LLM Tool Usage** — list which parts used AI assistance and how results were manually validated
 
 > Minimum 2,000 words. Include chart references (e.g. "As shown in Figure 5, ...").
+> Compile: `pdflatex agrisight_report.tex` → `report/agrisight_report.pdf`
 
 ---
 
@@ -1061,13 +1088,13 @@ On the prediction page, after returning a prediction, also call a `/api/analysis
 
 ```
 submission/
-├── 01_scraper_code/          # jd_scraper.py + requirements.txt
+├── 01_scraper_code/          # suning_scraper.py + generate_data.py + requirements.txt
 ├── 02_raw_data/              # raw_data.csv
 ├── 03_cleaned_data/          # cleaned_data.csv, final_data.csv, schema.sql, agrisight.db
 ├── 04_analysis_code/         # 01_descriptive.py ... 05_pca.py
 ├── 05_charts/                # all PNG chart exports
 ├── 06_web_system/            # backend/ + frontend/ full source
-├── 07_report/                # agrisight_report.docx
+├── 07_report/                # agrisight_report.tex + agrisight_report.pdf
 ├── 08_defense_ppt/           # defense.pptx
 └── 09_llm_usage/             # llm_tool_usage.docx
 ```

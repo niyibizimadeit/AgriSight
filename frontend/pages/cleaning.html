@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Data Cleaning — AgriSight</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div id="app">
+  <nav class="bg-white shadow-sm border-b sticky top-0 z-50"><div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between"><a href="../index.html" class="text-lg font-bold text-blue-700 shrink-0">🌾 AgriSight</a><div class="hidden md:flex items-center gap-1"><a v-for="item in nav" :href="item.href" :class="item.active?'bg-blue-600 text-white':'text-gray-600 hover:bg-gray-100'" class="px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap">{{ lang==='zh'?item.label_zh:item.label_en }}</a><button @click="switchLanguage" class="ml-2 px-2 py-1 text-xs border rounded hover:bg-gray-100">{{ lang==='zh'?'EN':'中文' }}</button></div><div class="md:hidden flex items-center gap-2"><button @click="switchLanguage" class="px-2 py-1 text-xs border rounded">{{ lang==='zh'?'EN':'中文' }}</button><button @click="menuOpen=!menuOpen" class="p-2 rounded-lg hover:bg-gray-100"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path v-if="!menuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/><path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div></div><div v-show="menuOpen" class="md:hidden border-t bg-white px-4 py-2 pb-4"><a v-for="item in nav" :href="item.href" @click="menuOpen=false" :class="item.active?'bg-blue-50 text-blue-700 font-medium':'text-gray-600'" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">{{ lang==='zh'?item.label_zh:item.label_en }}</a></div></nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-6">
+    <h1 class="text-xl md:text-2xl font-bold mb-4">{{ t('title') }}</h1>
+    <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 border space-y-4 text-sm">
+      <div v-for="(s,i) in steps" :key="i" class="border-b last:border-0 pb-4 last:pb-0">
+        <h3 class="font-semibold text-base mb-1">{{ i+1 }}. {{ s.title }}</h3>
+        <p class="text-gray-600">{{ s.detail }}</p>
+        <div v-if="s.result" class="mt-1 text-xs text-gray-400 font-mono">{{ s.result }}</div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+const { createApp, ref } = Vue;
+createApp({
+  setup() {
+    const lang=ref(localStorage.getItem("agrisight_lang")||"zh"); const menuOpen=ref(false);
+    const L={zh:{title:"数据清洗流程"},en:{title:"Data Cleaning Process"}};
+    const t=k=>L[lang.value]?.[k]||k;
+    const switchLanguage=()=>{lang.value=lang.value==='zh'?'en':'zh';localStorage.setItem("agrisight_lang",lang.value);location.reload();};
+    const nav=[{href:"../index.html",label_zh:"概览",label_en:"Home",active:false},{href:"products.html",label_zh:"商品",label_en:"Products",active:false},{href:"prediction.html",label_zh:"预测",label_en:"Predict",active:false},{href:"sales-analysis.html",label_zh:"销售",label_en:"Sales",active:false},{href:"influence-factors.html",label_zh:"因素",label_en:"Factors",active:false},{href:"clustering.html",label_zh:"聚类",label_en:"Clusters",active:false},{href:"pca.html",label_zh:"竞争力",label_en:"PCA",active:false},{href:"origin-map.html",label_zh:"产地",label_en:"Origins",active:false},{href:"promotion.html",label_zh:"促销",label_en:"Promos",active:false},{href:"suggestions.html",label_zh:"建议",label_en:"Tips",active:false},{href:"cleaning.html",label_zh:"清洗",label_en:"Clean",active:false},{href:"conclusions.html",label_zh:"结论",label_en:"Conclusions",active:false}];
+
+    const zh=lang.value==="zh";
+    const steps=zh?[
+      {title:"加载原始数据",detail:"从 data/raw/raw_data.csv 加载3,000条农产品记录，包含15个字段。",result:"3,000 rows × 15 columns"},
+      {title:"缺失值检查",detail:"检查 product_name、category、price 三个关键字段。生成数据完整，无需删除行。",result:"0 rows dropped"},
+      {title:"数值字段解析",detail:"price 字段支持字符串格式（\"¥12.80\"、\"12.8~45.0\"）→ 取最低价转为浮点数。sales_volume 支持\"1万+\" → 10000、\"358件\" → 358。",result:"100% parsed"},
+      {title:"分类映射",detail:"添加 category_en 列：水果→Fruits，蔬菜→Vegetables，粮油→Grains & Oils，茶叶→Tea，生鲜→Fresh Produce。",result:"5 categories mapped"},
+      {title:"缺失值填充",detail:"review_count 缺失填0，origin 缺失填\"未知\"，rating 按类别中位数填充。",result:"0 nulls remaining"},
+      {title:"去重",detail:"按 product_name + category 组合去重，移除79条重复记录。",result:"79 duplicates removed (2.6%)"},
+      {title:"异常值处理",detail:"price 和 sales_volume 按99分位数截尾：price 上界¥285（30条截断），sales_volume 上界5,173（30条截断）。",result:"60 values clipped"},
+      {title:"衍生字段",detail:"添加 price_tier（budget <¥20 / mid ¥20–80 / premium >¥80）和 review_density（reviews/sales 参与度指标）。",result:"2 derived columns"},
+      {title:"保存与导入",detail:"清洗后数据保存至 data/cleaned/cleaned_data.csv，同时导入 SQLite products 表。",result:"2,921 records saved"},
+    ]:[
+      {title:"Load Raw Data",detail:"Loaded 3,000 agricultural product records from data/raw/raw_data.csv with 15 fields.",result:"3,000 rows × 15 columns"},
+      {title:"Missing Value Check",detail:"Checked product_name, category, price — all complete. No rows dropped.",result:"0 rows dropped"},
+      {title:"Parse Numeric Fields",detail:"price supports string formats (\"¥12.80\", \"12.8~45.0\") → min price as float. sales_volume supports \"1万+\"→10000, \"358件\"→358.",result:"100% parsed"},
+      {title:"Category Mapping",detail:"Added category_en: 水果→Fruits, 蔬菜→Vegetables, 粮油→Grains & Oils, 茶叶→Tea, 生鲜→Fresh Produce.",result:"5 categories mapped"},
+      {title:"Fill Missing Values",detail:"review_count→0, origin→\"未知\", rating→category median.",result:"0 nulls remaining"},
+      {title:"Deduplication",detail:"Removed 79 exact duplicates by product_name + category.",result:"79 duplicates removed (2.6%)"},
+      {title:"Outlier Capping",detail:"price and sales_volume capped at 99th percentile: price ≤¥285 (30 clipped), sales ≤5,173 (30 clipped).",result:"60 values clipped"},
+      {title:"Derived Columns",detail:"Added price_tier (budget/mid/premium) and review_density (reviews/sales).",result:"2 derived columns"},
+      {title:"Save & Import",detail:"Saved to data/cleaned/cleaned_data.csv and imported into SQLite products table.",result:"2,921 records saved"},
+    ];
+    return {lang,menuOpen,t,switchLanguage,nav,steps};
+  }
+}).mount("#app");
+</script>
+</body>
+</html>

@@ -76,7 +76,7 @@ Rather than presenting this as a student analysis exercise, AgriSight is framed 
 - [ ] FastAPI backend source
 - [ ] Frontend source (HTML + JS)
 - [ ] All 9+ required charts (exported as PNG + rendered in web)
-- [ ] Analysis report (≥ 2,000 words)
+- [ ] Analysis report — LaTeX → PDF (≥ 2,000 words)
 - [ ] Defense PPT
 - [ ] LLM tool usage description
 
@@ -112,7 +112,8 @@ agrisight/
 │   ├── init_db.py             # Database initialization script
 │   └── agrisight.db           # SQLite database file (auto-created)
 ├── report/
-│   └── agrisight_report.docx
+│   ├── agrisight_report.tex
+│   └── agrisight_report.pdf
 └── requirements.txt
 ```
 

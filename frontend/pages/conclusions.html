@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Conclusions — AgriSight</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div id="app">
+  <nav class="bg-white shadow-sm border-b sticky top-0 z-50"><div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between"><a href="../index.html" class="text-lg font-bold text-blue-700 shrink-0">🌾 AgriSight</a><div class="hidden md:flex items-center gap-1"><a v-for="item in nav" :href="item.href" :class="item.active?'bg-blue-600 text-white':'text-gray-600 hover:bg-gray-100'" class="px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap">{{ lang==='zh'?item.label_zh:item.label_en }}</a><button @click="switchLanguage" class="ml-2 px-2 py-1 text-xs border rounded hover:bg-gray-100">{{ lang==='zh'?'EN':'中文' }}</button></div><div class="md:hidden flex items-center gap-2"><button @click="switchLanguage" class="px-2 py-1 text-xs border rounded">{{ lang==='zh'?'EN':'中文' }}</button><button @click="menuOpen=!menuOpen" class="p-2 rounded-lg hover:bg-gray-100"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path v-if="!menuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/><path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div></div><div v-show="menuOpen" class="md:hidden border-t bg-white px-4 py-2 pb-4"><a v-for="item in nav" :href="item.href" @click="menuOpen=false" :class="item.active?'bg-blue-50 text-blue-700 font-medium':'text-gray-600'" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">{{ lang==='zh'?item.label_zh:item.label_en }}</a></div></nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-6">
+    <h1 class="text-xl md:text-2xl font-bold mb-4">{{ t('title') }}</h1>
+    <div class="space-y-4">
+      <div v-for="(c,i) in conclusions" :key="i" class="bg-white rounded-xl shadow-sm p-4 md:p-6 border">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold shrink-0 text-sm" :class="c.color">{{ i+1 }}</div>
+          <div>
+            <h3 class="font-semibold text-base mb-1">{{ c.heading }}</h3>
+            <p class="text-gray-600 text-sm">{{ c.body }}</p>
+            <div class="mt-2 flex flex-wrap gap-1">
+              <span v-for="tag in c.tags" :key="tag" class="px-2 py-0.5 bg-gray-100 rounded-full text-xs text-gray-500">{{ tag }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+const { createApp, ref } = Vue;
+createApp({
+  setup() {
+    const lang=ref(localStorage.getItem("agrisight_lang")||"zh"); const menuOpen=ref(false);
+    const L={zh:{title:"分析结论"},en:{title:"Analysis Conclusions"}};
+    const t=k=>L[lang.value]?.[k]||k;
+    const switchLanguage=()=>{lang.value=lang.value==='zh'?'en':'zh';localStorage.setItem("agrisight_lang",lang.value);location.reload();};
+    const nav=[{href:"../index.html",label_zh:"概览",label_en:"Home",active:false},{href:"products.html",label_zh:"商品",label_en:"Products",active:false},{href:"prediction.html",label_zh:"预测",label_en:"Predict",active:false},{href:"sales-analysis.html",label_zh:"销售",label_en:"Sales",active:false},{href:"influence-factors.html",label_zh:"因素",label_en:"Factors",active:false},{href:"clustering.html",label_zh:"聚类",label_en:"Clusters",active:false},{href:"pca.html",label_zh:"竞争力",label_en:"PCA",active:false},{href:"origin-map.html",label_zh:"产地",label_en:"Origins",active:false},{href:"promotion.html",label_zh:"促销",label_en:"Promos",active:false},{href:"suggestions.html",label_zh:"建议",label_en:"Tips",active:false},{href:"cleaning.html",label_zh:"清洗",label_en:"Clean",active:false},{href:"conclusions.html",label_zh:"结论",label_en:"Conclusions",active:false}];
+
+    const zh=lang.value==="zh";
+    const conclusions=zh?[
+      {heading:"评价数是销量最强的驱动力",body:"相关性分析显示 review_count 与 sales_volume 的 Pearson r=0.725，是销量最强的预测因子。随机森林模型中 review_count 占69.6%的特征重要性。卖家应将资源集中在积累真实评价上。",tags:["相关性","回归","特征重要性"],color:"bg-blue-600"},
+      {heading:"促销对销量影响微乎其微",body:"促销状态（is_promoted）与销量的相关性仅为 r=-0.013，在OLS回归中不显著（p=0.76），在随机森林中仅占0.9%的重要性。数据显示打折并不能有效提升销量。",tags:["促销","OLS","p值"],color:"bg-red-500"},
+      {heading:"蔬菜类是销量之王，茶叶是利润之王",body:"蔬菜均价仅¥18.82但月销1,874件，是茶叶类的3.6倍。茶叶均价¥103.25，评分最高（4.46），适合高端利基策略。粮油类（¥53）在中端价位表现最稳定。",tags:["描述统计","类目对比"],color:"bg-green-600"},
+      {heading:"市场分层明显：4个聚类揭示不同策略",body:"K-Means聚类将产品分为4类：中端稳定型（41%，¥45，评分4.66）、低参与度（36%，¥39，评分3.94）、高端利基（12%，¥169）、高销量型（12%，¥32，销量3,048）。中端稳定型是市场最大公约数。",tags:["聚类","K-Means","市场细分"],color:"bg-purple-600"},
+      {heading:"竞争力=销量+评价−价格",body:"PCA第一主成分解释了36.7%的方差。sales_volume（+0.677）和 review_count（+0.644）是竞争力的主要正向驱动因素，price（−0.320）负向驱动。综合评分前20名产品均为低价格、高销量的蔬菜和水果类商品。",tags:["PCA","竞争力评分"],color:"bg-orange-500"},
+      {heading:"随机森林模型R²=0.71，预测可靠",body:"RF模型（100棵树）在测试集上的R²=0.709，MAE=342，RMSE=550。相比OLS的R²=0.598提升了11个百分点。模型已部署为API，可通过前端预测工具实时预测销量。",tags:["模型表现","R²","RF vs OLS"],color:"bg-gray-700"},
+    ]:[
+      {heading:"Review Count Is the Strongest Sales Driver",body:"Pearson r=0.725 with sales_volume. RF feature importance: 69.6%. Sellers should invest in generating authentic reviews over discounts.",tags:["Correlation","Regression","Feature Importance"],color:"bg-blue-600"},
+      {heading:"Promotions Have Negligible Impact on Sales",body:"is_promoted correlates at r=-0.013 with sales, not significant in OLS (p=0.76), only 0.9% RF importance. Discounts don't drive sales — reviews do.",tags:["Promotion","OLS","p-value"],color:"bg-red-500"},
+      {heading:"Vegetables = Volume King; Tea = Margin King",body:"Vegetables avg ¥18.82 yet sell 1,874/mo (3.6× Tea). Tea avg ¥103.25 with highest rating (4.46) — ideal for premium niche. Grains & Oils (¥53) most stable mid-range.",tags:["Descriptive","Category Comparison"],color:"bg-green-600"},
+      {heading:"4 Distinct Market Segments via Clustering",body:"K-Means (K=4): Mid-range Stable (41%, ¥45, rating 4.66), Low Engagement (36%, ¥39, rating 3.94), Premium Niche (12%, ¥169), Budget High-Volume (12%, ¥32, 3,048 sales). Mid-range Stable is the market equilibrium.",tags:["Clustering","K-Means","Segmentation"],color:"bg-purple-600"},
+      {heading:"Competitiveness = Sales + Reviews − Price",body:"PC1 explains 36.7% variance. sales_volume (+0.677) and review_count (+0.644) drive competitiveness positively; price (-0.320) negatively. Top 20 products are all low-price, high-volume vegetables & fruits.",tags:["PCA","Competitiveness Score"],color:"bg-orange-500"},
+      {heading:"RF Model R²=0.71 — Reliable Predictions",body:"Random Forest (100 trees): test set R²=0.709, MAE=342, RMSE=550. +11pp improvement over OLS (R²=0.598). Model deployed as API — real-time predictions available via the Predict page.",tags:["Model Performance","R²","RF vs OLS"],color:"bg-gray-700"},
+    ];
+    return {lang,menuOpen,t,switchLanguage,nav,conclusions};
+  }
+}).mount("#app");
+</script>
+</body>
+</html>

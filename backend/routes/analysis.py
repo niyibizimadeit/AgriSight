@@ -115,3 +115,83 @@ def promotion_impact():
             else 0
         ),
     }
+
+
+@router.get("/benchmark")
+def seller_benchmark(category: str, price: float):
+    """Compare a seller's price against competitors in the same category."""
+    rows = query(
+        "SELECT price FROM products WHERE category = ? AND price > 0",
+        (category,),
+    )
+    if not rows:
+        return {"error": "No data for this category"}
+
+    prices = sorted([r["price"] for r in rows])
+    n = len(prices)
+    rank = sum(1 for p in prices if p < price)
+    percentile = round(rank / n * 100, 1)
+
+    return {
+        "category": category,
+        "your_price": price,
+        "total_products": n,
+        "percentile": percentile,
+        "interpretation": (
+            f"Your price is higher than {percentile}% of competitors"
+            if percentile > 50
+            else f"Your price is lower than {100 - percentile}% of competitors"
+        ),
+        "median_price": round(prices[n // 2], 2),
+        "price_range": {
+            "min": round(prices[0], 2),
+            "p25": round(prices[n // 4], 2),
+            "p75": round(prices[3 * n // 4], 2),
+            "max": round(prices[-1], 2),
+        },
+    }
+
+
+@router.get("/price-optimum")
+def price_optimum(category: str):
+    """Find the price range with the highest median sales in a category."""
+    import pandas as pd
+    import sqlite3
+    from backend.db import get_connection
+
+    conn = get_connection()
+    df = pd.read_sql(
+        "SELECT price, sales_volume FROM products WHERE category = ?",
+        conn, params=(category,),
+    )
+    conn.close()
+
+    if df.empty:
+        return {"error": "No data for this category"}
+
+    # Bin prices into ranges and find the best-performing range
+    df["price_bin"] = pd.cut(df["price"], bins=5)
+    bin_stats = df.groupby("price_bin", observed=False).agg(
+        count=("price", "count"),
+        avg_sales=("sales_volume", "mean"),
+        median_sales=("sales_volume", "median"),
+    ).round(0)
+    best_bin = bin_stats["avg_sales"].idxmax()
+
+    return {
+        "category": category,
+        "optimal_range": {
+            "low": round(best_bin.left, 0),
+            "high": round(best_bin.right, 0),
+        },
+        "avg_sales_in_range": int(bin_stats.loc[best_bin, "avg_sales"]),
+        "product_count": int(bin_stats.loc[best_bin, "count"]),
+        "all_bins": [
+            {
+                "range": f"¥{int(b.left)}–{int(b.right)}",
+                "count": int(r["count"]),
+                "avg_sales": int(r["avg_sales"]),
+            }
+            for b, r in bin_stats.iterrows()
+        ],
+    }

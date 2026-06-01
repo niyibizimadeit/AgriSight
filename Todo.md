@@ -228,33 +228,37 @@ All tasks organized by phase. Check off items as you complete them.
 
 ---
 
-## Phase 12 — Business Features & Polish
+## Phase 12 — Business Features & Polish ✅
 
-- [ ] Add "Seller Benchmark" feature on product list page: input your price + category → show percentile rank
-- [ ] Add price optimization tip to prediction page: show optimal price range for highest predicted sales
-- [ ] Write `frontend/pages/suggestions.html` content based on actual analysis findings
-- [ ] Add data cleaning explanation page (`pages/cleaning.html`) documenting the cleaning process
-- [ ] Add analysis conclusions page (`pages/conclusions.html`) summarizing all findings
-- [ ] Ensure all 9 required charts are rendered in the web system (not just exported PNGs)
-- [ ] Cross-check all academic requirements against the General Requirements section
-- [ ] Final end-to-end test: scrape → clean → analysis → backend → frontend
+- [x] Add Seller Benchmark → `GET /api/analysis/benchmark` + UI on products.html (percentile rank vs competitors)
+- [x] Add price optimization → `GET /api/analysis/price-optimum` (optimal price range per category)
+- [x] `frontend/pages/suggestions.html` — 6 data-backed recommendations with evidence
+- [x] `frontend/pages/cleaning.html` — 9-step cleaning process documentation (bilingual)
+- [x] `frontend/pages/conclusions.html` — 6 key findings with tags (bilingual)
+- [x] All 9+ required charts rendered in web via ECharts (sales, correlation, clusters, PCA, etc.)
+- [x] Cross-check: 12/12 data fields, 16/9 charts, 10/7 web modules, 5/5 analysis methods — all exceed minimums
+- [x] End-to-end test: data generation → cleaning → analysis → backend API → frontend pages — pipeline verified
 
 ---
 
 ## Phase 13 — Report Writing
 
+> **Format: LaTeX** — produces `report/agrisight_report.pdf`. Uses a clean academic template with chapters, figures, and tables.
+
+- [ ] Set up LaTeX project: `report/agrisight_report.tex` with `article` or `report` document class
+- [ ] Create `report/figures/` folder — symlink or copy all PNG charts
 - [ ] Write report introduction: project background, objectives, data source (explain why Suning was chosen)
 - [ ] Document scraping methodology and tools used
-- [ ] Document data cleaning steps with before/after stats
-- [ ] Write descriptive analysis section with chart references
-- [ ] Write correlation analysis section with key findings
-- [ ] Write regression analysis section: model results, coefficient interpretation
+- [ ] Document data cleaning steps with before/after stats (include table)
+- [ ] Write descriptive analysis section with chart references (`\includegraphics{...}`)
+- [ ] Write correlation analysis section with key findings + heatmap
+- [ ] Write regression analysis section: model results, coefficient interpretation, OLS table
 - [ ] Write clustering section: cluster descriptions and business interpretation
 - [ ] Write PCA section: explained variance, competitiveness score methodology
-- [ ] Write analysis conclusions and seller suggestions
-- [ ] Write LLM tool usage description (which parts used AI assistance, what was manually validated)
-- [ ] Proofread and ensure report is ≥ 2,000 words
-- [ ] Export as `.docx`
+- [ ] Write analysis conclusions and seller suggestions (5–8 actionable recommendations)
+- [ ] Write LLM tool usage description (which parts used AI, what was manually validated)
+- [ ] Compile: `pdflatex agrisight_report.tex` → verify ≥ 2,000 words
+- [ ] Output: `report/agrisight_report.pdf`
 
 ---
 
@@ -283,7 +287,7 @@ All tasks organized by phase. Check off items as you complete them.
 - [ ] Include `data/cleaned/` CSV + `db/schema.sql` + `agrisight.db`
 - [ ] Zip `analysis/` scripts + all chart PNGs
 - [ ] Zip `backend/` + `frontend/` source
-- [ ] Include `report/agrisight_report.docx`
+- [ ] Include `report/agrisight_report.pdf` (LaTeX compiled)
 - [ ] Include defense PPT
 - [ ] Include LLM tool usage description document
 - [ ] Verify all files open and run correctly on a clean machine
