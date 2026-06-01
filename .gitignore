@@ -1,0 +1,39 @@
+# Virtual environment
+venv/
+
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data (raw data can be large)
+data/raw/*.csv
+data/raw/*.json
+
+# Database
+data/*.db
+*.db-journal
+*.db-wal
+
+# Logs
+*.log
+scraper.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/

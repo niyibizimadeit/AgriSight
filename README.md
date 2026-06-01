@@ -38,7 +38,7 @@ Rather than presenting this as a student analysis exercise, AgriSight is framed 
 | Backend API | `FastAPI` |
 | Frontend | HTML5 + ECharts + Tailwind CSS |
 | Database | SQLite (zero-config, portable) |
-| Environment | Python 3.10+, virtual environment |
+| Environment | Python 3.13+, virtual environment |
 
 ---
 

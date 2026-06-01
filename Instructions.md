@@ -28,17 +28,17 @@ venv\Scripts\activate           # Windows
 requests==2.31.0
 selenium==4.18.1
 beautifulsoup4==4.12.3
-pandas==2.2.1
-numpy==1.26.4
-scipy==1.13.0
-statsmodels==0.14.1
-scikit-learn==1.4.1
-matplotlib==3.8.3
+pandas==2.2.3
+numpy==2.2.0
+scipy==1.14.1
+statsmodels==0.14.4
+scikit-learn==1.6.0
+matplotlib==3.10.0
 seaborn==0.13.2
-fastapi==0.110.0
-uvicorn==0.29.0
+fastapi==0.115.0
+uvicorn==0.34.0
 python-dotenv==1.0.1
-joblib==1.3.2
+joblib==1.4.2
 ```
 
 ```bash

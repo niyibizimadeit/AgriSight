@@ -6,15 +6,15 @@ All tasks organized by phase. Check off items as you complete them.
 
 ## Phase 1 — Project Setup & Environment
 
-- [ ] Create project root directory `agrisight/`
-- [ ] Set up Python virtual environment (`python -m venv venv`)
-- [ ] Create `requirements.txt` with all dependencies
-- [ ] Install all packages: `pip install -r requirements.txt`
-- [ ] Initialize SQLite database: run `python db/init_db.py` to create `agrisight.db`
-- [ ] Create folder structure: `scraper/`, `data/raw/`, `data/cleaned/`, `analysis/`, `backend/`, `frontend/`, `db/`, `report/`
-- [ ] Create `.gitignore` (exclude venv, raw data, `.env`)
-- [ ] Set up `.env` file with `DB_PATH=data/agrisight.db`
-- [ ] Test database connection from Python
+- [x] Create project root directory `agrisight/`
+- [x] Set up Python virtual environment (`python -m venv venv`)
+- [x] Create `requirements.txt` with all dependencies
+- [x] Install all packages: `pip install -r requirements.txt`
+- [x] Initialize SQLite database: run `python db/init_db.py` to create `agrisight.db`
+- [x] Create folder structure: `scraper/`, `data/raw/`, `data/cleaned/`, `analysis/`, `backend/`, `frontend/`, `db/`, `report/`
+- [x] Create `.gitignore` (exclude venv, raw data, `.env`)
+- [x] Set up `.env` file with `DB_PATH=data/agrisight.db`
+- [x] Test database connection from Python
 
 ---
 
