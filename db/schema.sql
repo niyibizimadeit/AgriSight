@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS products (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   product_name TEXT,
   category TEXT,
+  category_en TEXT,
   price REAL,
   sales_volume INTEGER,
   review_count INTEGER,

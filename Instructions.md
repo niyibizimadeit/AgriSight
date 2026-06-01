@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS products (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   product_name TEXT,
   category TEXT,
+  category_en TEXT,
   price REAL,
   sales_volume INTEGER,
   review_count INTEGER,
@@ -255,6 +256,18 @@ import re
 df = pd.read_csv("data/raw/raw_data.csv")
 print(f"Raw records: {len(df)}")
 
+# --- Category mapping (Chinese → English) ---
+CATEGORY_MAP = {
+    "水果":     "Fruits",
+    "蔬菜":     "Vegetables",
+    "粮油":     "Grains & Oils",
+    "粮油调味": "Grains & Oils",
+    "茶叶":     "Tea",
+    "生鲜":     "Fresh Produce",
+    "生鲜肉禽": "Fresh Produce",
+}
+df["category_en"] = df["category"].map(CATEGORY_MAP).fillna("Other")
+
 # --- Drop rows missing critical fields ---
 df.dropna(subset=["product_name", "category", "price"], inplace=True)
 
@@ -334,9 +347,30 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.rcParams['font.family'] = 'SimHei'  # Chinese font support
 
+# ---- Language toggle: "zh" = Chinese, "en" = English ----
+LANG = "zh"
+T = {
+    "zh": {
+        "count_by_cat":   "各类目商品数量",
+        "avg_sales_cat":  "各类目平均销量",
+        "price_dist":     "价格分布",
+        "cat_pie":        "类目占比",
+        "price_tier":     "各价格区间平均销量",
+        "ylabel_sales":   "平均销量",
+    },
+    "en": {
+        "count_by_cat":   "Product Count by Category",
+        "avg_sales_cat":  "Average Sales Volume by Category",
+        "price_dist":     "Price Distribution",
+        "cat_pie":        "Category Proportion",
+        "price_tier":     "Average Sales by Price Tier",
+        "ylabel_sales":   "Average Sales Volume",
+    },
+}[LANG]
+
 df = pd.read_csv("data/cleaned/cleaned_data.csv")
 
-# Summary stats per category
+# Summary stats per category (use category_en for English reports)
 summary = df.groupby("category").agg(
     count=("product_name", "count"),
     avg_price=("price", "mean"),
@@ -347,31 +381,32 @@ print(summary)
 summary.to_csv("data/cleaned/descriptive_summary.csv")
 
 # Chart 1: Product count by category
-summary["count"].plot(kind="bar", title="各类目商品数量")
+summary["count"].plot(kind="bar", title=T["count_by_cat"])
 plt.tight_layout()
 plt.savefig("analysis/charts/01_count_by_category.png")
 plt.clf()
 
 # Chart 2: Avg sales by category
-summary["avg_sales"].plot(kind="bar", color="orange", title="各类目平均销量")
+summary["avg_sales"].plot(kind="bar", color="orange", title=T["avg_sales_cat"])
 plt.tight_layout()
 plt.savefig("analysis/charts/02_avg_sales_by_category.png")
 plt.clf()
 
 # Chart 3: Price distribution histogram
-df["price"].hist(bins=40, title="价格分布")
+df["price"].hist(bins=40, title=T["price_dist"])
 plt.savefig("analysis/charts/03_price_distribution.png")
 plt.clf()
 
 # Chart 4: Category pie chart
-df["category"].value_counts().plot(kind="pie", autopct="%1.1f%%", title="类目占比")
+df["category"].value_counts().plot(kind="pie", autopct="%1.1f%%", title=T["cat_pie"])
 plt.savefig("analysis/charts/04_category_pie.png")
 plt.clf()
+
 # Chart 5: Average sales by price tier
 df.groupby("price_tier")["sales_volume"].mean().plot(
-    kind="bar", color=["green", "orange", "red"], title="各价格区间平均销量"
+    kind="bar", color=["green", "orange", "red"], title=T["price_tier"]
 )
-plt.ylabel("Average Sales Volume")
+plt.ylabel(T["ylabel_sales"])
 plt.tight_layout()
 plt.savefig("analysis/charts/05_price_tier_vs_sales.png")
 plt.clf()
@@ -388,34 +423,51 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+# ---- Language toggle ----
+LANG = "zh"
+T = {
+    "zh": {
+        "heatmap":       "相关性热力图",
+        "rating_sales":  "评分 vs 销量",
+        "reviews_sales": "评论数 vs 销量",
+        "price_sales":   "价格 vs 销量 (按类目着色)",
+    },
+    "en": {
+        "heatmap":       "Correlation Heatmap",
+        "rating_sales":  "Rating vs Sales Volume",
+        "reviews_sales": "Review Count vs Sales Volume",
+        "price_sales":   "Price vs Sales Volume by Category",
+    },
+}[LANG]
+
 df = pd.read_csv("data/cleaned/cleaned_data.csv")
 features = ["price", "sales_volume", "review_count", "rating", "is_promoted"]
 corr = df[features].corr()
 
-# Chart 5: Correlation heatmap
+# Chart 6: Correlation heatmap
 sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f")
-plt.title("相关性热力图")
+plt.title(T["heatmap"])
 plt.tight_layout()
 plt.savefig("analysis/charts/06_correlation_heatmap.png")
 plt.clf()
 
-# Chart 6: Rating vs sales scatter
-df.plot.scatter(x="rating", y="sales_volume", alpha=0.3, title="评分 vs 销量")
+# Chart 7: Rating vs sales scatter
+df.plot.scatter(x="rating", y="sales_volume", alpha=0.3, title=T["rating_sales"])
 plt.savefig("analysis/charts/07_rating_vs_sales.png")
 plt.clf()
 
-# Chart 7: Reviews vs sales scatter
-df.plot.scatter(x="review_count", y="sales_volume", alpha=0.3, title="评论数 vs 销量")
+# Chart 8: Reviews vs sales scatter
+df.plot.scatter(x="review_count", y="sales_volume", alpha=0.3, title=T["reviews_sales"])
 plt.savefig("analysis/charts/08_reviews_vs_sales.png")
 plt.clf()
 
-# Chart 8: Price vs sales scatter (color-coded by category)
+# Chart 9: Price vs sales scatter (color-coded by category)
 for cat, group in df.groupby("category"):
     plt.scatter(group["price"], group["sales_volume"], label=cat, alpha=0.3, s=10)
 plt.xlabel("Price (¥)")
 plt.ylabel("Sales Volume")
 plt.legend(title="Category", fontsize=8)
-plt.title("价格 vs 销量 (按类目着色)")
+plt.title(T["price_sales"])
 plt.tight_layout()
 plt.savefig("analysis/charts/09_price_vs_sales_by_category.png")
 plt.clf()
@@ -437,6 +489,13 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import LabelEncoder
 import statsmodels.api as sm
+
+# ---- Language toggle ----
+LANG = "zh"
+T = {
+    "zh": {"feat_imp": "特征重要性", "actual_pred": "实际销量 vs 预测销量"},
+    "en": {"feat_imp": "Feature Importance", "actual_pred": "Actual vs Predicted Sales"},
+}[LANG]
 
 df = pd.read_csv("data/cleaned/cleaned_data.csv").dropna(
     subset=["price", "sales_volume", "review_count", "rating", "is_promoted", "category"]
@@ -471,20 +530,20 @@ print(f"R²: {r2_score(y_test, y_pred):.4f}")
 joblib.dump(rf, "backend/models/rf_model.pkl")
 joblib.dump(le, "backend/models/label_encoder.pkl")
 
-# Chart 9: Feature importance
+# Chart 10: Feature importance
 pd.Series(rf.feature_importances_, index=features).sort_values().plot(
-    kind="barh", title="特征重要性"
+    kind="barh", title=T["feat_imp"]
 )
 plt.tight_layout()
 plt.savefig("analysis/charts/10_feature_importance.png")
 plt.clf()
 
-# Chart 10: Actual vs predicted sales
+# Chart 11: Actual vs predicted sales
 plt.scatter(y_test, y_pred, alpha=0.3, s=10)
 plt.plot([y.min(), y.max()], [y.min(), y.max()], "r--", lw=1)
 plt.xlabel("Actual Sales")
 plt.ylabel("Predicted Sales")
-plt.title("实际销量 vs 预测销量")
+plt.title(T["actual_pred"])
 plt.tight_layout()
 plt.savefig("analysis/charts/11_actual_vs_predicted.png")
 plt.clf()
@@ -502,6 +561,13 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
+
+# ---- Language toggle ----
+LANG = "zh"
+T = {
+    "zh": {"cluster_scatter": "产品聚类结果", "radar": "各聚类特征雷达图"},
+    "en": {"cluster_scatter": "Product Clustering Result", "radar": "Cluster Feature Radar Chart"},
+}[LANG]
 
 df = pd.read_csv("data/cleaned/cleaned_data.csv").dropna(
     subset=["price", "sales_volume", "review_count", "rating"]
@@ -530,11 +596,11 @@ plt.clf()
 km = KMeans(n_clusters=4, random_state=42, n_init=10)
 df["cluster"] = km.fit_predict(X_scaled)
 
-# Cluster labels (assign after inspecting centroids)
+# Cluster labels (English — business segment names)
 label_map = {0: "Budget High-Volume", 1: "Premium Niche", 2: "Mid-range Stable", 3: "Low Engagement"}
 df["cluster_label"] = df["cluster"].map(label_map)
 
-# Chart: cluster scatter
+# Chart 13: cluster scatter
 colors = {0: "blue", 1: "red", 2: "green", 3: "orange"}
 for c, group in df.groupby("cluster"):
     plt.scatter(group["price"], group["sales_volume"], label=label_map[c],
@@ -542,11 +608,11 @@ for c, group in df.groupby("cluster"):
 plt.xlabel("Price")
 plt.ylabel("Sales Volume")
 plt.legend()
-plt.title("产品聚类结果")
+plt.title(T["cluster_scatter"])
 plt.savefig("analysis/charts/13_cluster_scatter.png")
 plt.clf()
 
-# Chart: radar chart per cluster
+# Chart 14: radar chart per cluster
 from math import pi
 cluster_means = df.groupby("cluster")[features].mean()
 categories = features
@@ -562,7 +628,7 @@ for c_idx, row in cluster_means.iterrows():
     ax.fill(angles, values, alpha=0.1)
 ax.set_xticks(angles[:-1])
 ax.set_xticklabels(["Price", "Sales Vol", "Reviews", "Rating"])
-ax.set_title("各聚类特征雷达图")
+ax.set_title(T["radar"])
 ax.legend(loc="upper right", bbox_to_anchor=(1.3, 1.1))
 plt.tight_layout()
 plt.savefig("analysis/charts/14_radar_per_cluster.png")
@@ -583,6 +649,13 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
+
+# ---- Language toggle ----
+LANG = "zh"
+T = {
+    "zh": {"top20": "Top 20 竞争力产品"},
+    "en": {"top20": "Top 20 Most Competitive Products"},
+}[LANG]
 
 df = pd.read_csv("data/cleaned/clustered_data.csv").dropna(
     subset=["price", "sales_volume", "review_count", "rating", "is_promoted"]
@@ -612,7 +685,7 @@ df["competitiveness_score"] = -scores  # negate if PC1 anti-correlates with sale
 # Top 20 chart
 top20 = df.nlargest(20, "competitiveness_score")[["product_name", "competitiveness_score"]]
 top20.set_index("product_name")["competitiveness_score"].plot(
-    kind="barh", title="Top 20 竞争力产品"
+    kind="barh", title=T["top20"]
 )
 plt.tight_layout()
 plt.savefig("analysis/charts/16_competitiveness_top20.png")
@@ -735,7 +808,31 @@ Test: `http://localhost:8000/docs` (FastAPI auto-generates Swagger UI)
 
 ## Phase 11 — Frontend Development
 
-### 11.1 ECharts integration
+### 11.1 Language Toggle (Bilingual Support)
+
+All chart scripts and the web system support Chinese (`zh`) and English (`en`). In the frontend, add a language switcher that toggles chart labels:
+
+```javascript
+// Language toggle — stored in localStorage, defaults to "zh"
+let lang = localStorage.getItem("agrisight_lang") || "zh";
+
+const LABELS = {
+  zh: { overview: "数据概览", products: "商品列表", predict: "销量预测", /* ... */ },
+  en: { overview: "Data Overview", products: "Product List", predict: "Sales Prediction", /* ... */ },
+};
+
+function t(key) { return LABELS[lang][key] || key; }
+
+function switchLanguage(l) {
+  lang = l;
+  localStorage.setItem("agrisight_lang", l);
+  location.reload();  // or re-render charts in-place
+}
+```
+
+When fetching data from the backend, pass `?lang=en` to get English category names (`category_en` column).
+
+### 11.2 ECharts integration
 
 Include ECharts via CDN in every HTML page:
 
@@ -748,7 +845,7 @@ For the China map (origin heatmap), also include:
 <script src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
 ```
 
-### 11.2 Fetching API data
+### 11.3 Fetching API data
 
 Standard pattern for all chart pages:
 
@@ -767,7 +864,7 @@ async function loadChart() {
 loadChart();
 ```
 
-### 11.3 Prediction widget
+### 11.4 Prediction widget
 
 ```html
 <input id="price" type="number" placeholder="Price (¥)" />

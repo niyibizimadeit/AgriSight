@@ -82,6 +82,8 @@ All tasks organized by phase. Check off items as you complete them.
 - [ ] Standardize category labels (strip whitespace, normalize any label variations)
 - [ ] Standardize promotion field → binary `is_promoted` (0/1)
 - [ ] Handle outliers: cap `sales_volume` and `price` at 99th percentile
+- [ ] Add category English mapping → `category_en` column:
+  - 水果 → Fruits, 蔬菜 → Vegetables, 粮油/粮油调味 → Grains & Oils, 茶叶 → Tea, 生鲜/生鲜肉禽 → Fresh Produce
 - [ ] Add derived columns:
   - [ ] `price_tier`: budget (bottom 33%) / mid (middle 33%) / premium (top 33%) per category
   - [ ] `review_density`: review_count / sales_volume (proxy for buyer engagement rate)
