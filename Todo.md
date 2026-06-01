@@ -10,10 +10,10 @@ All tasks organized by phase. Check off items as you complete them.
 - [ ] Set up Python virtual environment (`python -m venv venv`)
 - [ ] Create `requirements.txt` with all dependencies
 - [ ] Install all packages: `pip install -r requirements.txt`
-- [ ] Initialize MySQL database and create `agrisight` schema
+- [ ] Initialize SQLite database: run `python db/init_db.py` to create `agrisight.db`
 - [ ] Create folder structure: `scraper/`, `data/raw/`, `data/cleaned/`, `analysis/`, `backend/`, `frontend/`, `db/`, `report/`
 - [ ] Create `.gitignore` (exclude venv, raw data, `.env`)
-- [ ] Set up `.env` file for DB credentials and config
+- [ ] Set up `.env` file with `DB_PATH=data/agrisight.db`
 - [ ] Test database connection from Python
 
 ---
@@ -70,7 +70,7 @@ All tasks organized by phase. Check off items as you complete them.
 - [ ] Add derived columns: `price_tier` (budget/mid/premium), `review_density` (reviews/sales)
 - [ ] Save cleaned data to `data/cleaned/cleaned_data.csv`
 - [ ] Document before/after row counts and cleaning decisions
-- [ ] Import cleaned data into MySQL `products` table
+- [ ] Import cleaned data into SQLite `products` table (run `db/init_db.py`)
 
 ---
 
@@ -125,7 +125,7 @@ All tasks organized by phase. Check off items as you complete them.
 - [ ] Normalize features with `StandardScaler`
 - [ ] Use Elbow Method to determine optimal K (plot inertia for K=2–8)
 - [ ] Fit K-Means with chosen K (expect K=3 or 4)
-- [ ] Label clusters with business names (e.g. "Budget High-Volume", "Premium Niche", "Mid-range Stable")
+- [ ] Label clusters with business names (e.g. "Budget High-Volume", "Premium Niche", "Mid-range Stable", "Low Engagement")
 - [ ] Add `cluster_label` column to cleaned dataset and save
 - [ ] Plot: clustering result scatter plot (price vs sales, colored by cluster)
 - [ ] Plot: radar chart per cluster (avg values across all features)
@@ -152,7 +152,7 @@ All tasks organized by phase. Check off items as you complete them.
 ## Phase 10 — Backend API (FastAPI)
 
 - [ ] Write `backend/main.py` — initialize FastAPI app
-- [ ] Create DB connection utility (`backend/db.py`) using `mysql-connector-python` or `SQLAlchemy`
+- [ ] Create DB connection utility (`backend/db.py`) using `sqlite3` with helper functions
 - [ ] Implement routes:
   - [ ] `GET /api/overview` — KPI summary stats
   - [ ] `GET /api/products` — paginated product list with filters (category, price range, origin)
@@ -241,7 +241,7 @@ All tasks organized by phase. Check off items as you complete them.
 
 - [ ] Zip `scraper/` source code
 - [ ] Include `data/raw/` CSV
-- [ ] Include `data/cleaned/` CSV + `db/schema.sql` + MySQL dump
+- [ ] Include `data/cleaned/` CSV + `db/schema.sql` + `agrisight.db`
 - [ ] Zip `analysis/` scripts + all chart PNGs
 - [ ] Zip `backend/` + `frontend/` source
 - [ ] Include `report/agrisight_report.docx`

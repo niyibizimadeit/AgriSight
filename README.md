@@ -37,7 +37,7 @@ Rather than presenting this as a student analysis exercise, AgriSight is framed 
 | Machine Learning | `scikit-learn` (KMeans, RandomForest, PCA, LinearRegression) |
 | Backend API | `FastAPI` |
 | Frontend | HTML5 + ECharts + Tailwind CSS |
-| Database | MySQL (local) / SQLite (dev) |
+| Database | SQLite (zero-config, portable) |
 | Environment | Python 3.10+, virtual environment |
 
 ---
@@ -71,7 +71,7 @@ Rather than presenting this as a student analysis exercise, AgriSight is framed 
 
 - [ ] Scraping source code
 - [ ] Raw data CSV
-- [ ] Cleaned data CSV + MySQL dump
+- [ ] Cleaned data CSV + SQLite database file
 - [ ] Analysis notebooks / scripts
 - [ ] FastAPI backend source
 - [ ] Frontend source (HTML + JS)
@@ -87,12 +87,12 @@ Rather than presenting this as a student analysis exercise, AgriSight is framed 
 ```
 agrisight/
 ├── scraper/
-│   ├── jd_scraper.py          # Main scraping script
-│   └── proxy_config.py        # Optional proxy/rate-limit config
+│   └── jd_scraper.py          # Main scraping script
 ├── data/
 │   ├── raw/                   # Raw scraped CSV files
 │   └── cleaned/               # Cleaned and processed data
 ├── analysis/
+│   ├── charts/                # Exported PNG charts
 │   ├── 01_descriptive.py
 │   ├── 02_correlation.py
 │   ├── 03_regression.py
@@ -100,6 +100,7 @@ agrisight/
 │   └── 05_pca.py
 ├── backend/
 │   ├── main.py                # FastAPI app entry point
+│   ├── db.py                  # SQLite connection utility
 │   ├── routes/
 │   └── models/
 ├── frontend/
@@ -107,7 +108,9 @@ agrisight/
 │   ├── pages/
 │   └── static/
 ├── db/
-│   └── schema.sql
+│   ├── schema.sql             # Reference DDL
+│   ├── init_db.py             # Database initialization script
+│   └── agrisight.db           # SQLite database file (auto-created)
 ├── report/
 │   └── agrisight_report.docx
 └── requirements.txt

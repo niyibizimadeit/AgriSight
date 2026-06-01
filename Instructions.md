@@ -37,7 +37,6 @@ matplotlib==3.8.3
 seaborn==0.13.2
 fastapi==0.110.0
 uvicorn==0.29.0
-mysql-connector-python==8.3.0
 python-dotenv==1.0.1
 joblib==1.3.2
 ```
@@ -49,42 +48,54 @@ pip install -r requirements.txt
 ### 1.4 .env file
 
 ```
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=agrisight
-DB_USER=root
-DB_PASS=yourpassword
+DB_PATH=data/agrisight.db
 ```
 
 ### 1.5 Database setup
 
-```sql
--- db/schema.sql
-CREATE DATABASE IF NOT EXISTS agrisight;
-USE agrisight;
+SQLite is used for zero-configuration, portable storage — no server install needed. The database file is created automatically on first use.
 
-CREATE TABLE products (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  product_name VARCHAR(255),
-  category VARCHAR(100),
-  price DECIMAL(10,2),
-  sales_volume INT,
-  review_count INT,
-  rating DECIMAL(3,1),
-  origin VARCHAR(100),
-  shipping_location VARCHAR(100),
-  store_name VARCHAR(255),
-  is_promoted TINYINT(1),
+```sql
+-- db/schema.sql (reference DDL — SQLite creates tables via Python)
+CREATE TABLE IF NOT EXISTS products (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_name TEXT,
+  category TEXT,
+  price REAL,
+  sales_volume INTEGER,
+  review_count INTEGER,
+  rating REAL,
+  origin TEXT,
+  shipping_location TEXT,
+  store_name TEXT,
+  is_promoted INTEGER,
   product_url TEXT,
-  price_tier VARCHAR(50),
-  cluster_label VARCHAR(100),
-  competitiveness_score DECIMAL(8,4),
+  price_tier TEXT,
+  cluster_label TEXT,
+  competitiveness_score REAL,
   scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
+```python
+# db/init_db.py — run once to create tables and import cleaned data
+import sqlite3, os
+from dotenv import load_dotenv
+load_dotenv()
+
+DB_PATH = os.getenv("DB_PATH", "data/agrisight.db")
+os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+
+conn = sqlite3.connect(DB_PATH)
+with open("db/schema.sql", encoding="utf-8") as f:
+    conn.executescript(f.read())
+conn.commit()
+conn.close()
+print(f"Database initialized at {DB_PATH}")
+```
+
 ```bash
-mysql -u root -p < db/schema.sql
+python db/init_db.py
 ```
 
 ---
@@ -103,7 +114,7 @@ https://search.jd.com/Search?keyword=茶叶&page=1
 https://search.jd.com/Search?keyword=生鲜肉禽&page=1
 ```
 
-Collect at least 400 records per category to reach 2,000 total.
+Collect at least 400 records per category to reach 2,000 raw records (expect ~1,500+ after cleaning).
 
 ### 2.2 Inspect the page structure
 
@@ -279,6 +290,11 @@ def price_tier(p):
 
 df["price_tier"] = df["price"].apply(price_tier)
 
+# --- Review density: reviews per unit sold (handle division by zero) ---
+df["review_density"] = np.where(df["sales_volume"] > 0,
+                                 df["review_count"] / df["sales_volume"],
+                                 0)
+
 print(f"Cleaned records: {len(df)}")
 df.to_csv("data/cleaned/cleaned_data.csv", index=False, encoding="utf-8-sig")
 ```
@@ -361,6 +377,17 @@ plt.clf()
 df.plot.scatter(x="review_count", y="sales_volume", alpha=0.3, title="评论数 vs 销量")
 plt.savefig("analysis/charts/07_reviews_vs_sales.png")
 plt.clf()
+
+# Chart 8: Price vs sales scatter (color-coded by category)
+for cat, group in df.groupby("category"):
+    plt.scatter(group["price"], group["sales_volume"], label=cat, alpha=0.3, s=10)
+plt.xlabel("Price (¥)")
+plt.ylabel("Sales Volume")
+plt.legend(title="Category", fontsize=8)
+plt.title("价格 vs 销量 (按类目着色)")
+plt.tight_layout()
+plt.savefig("analysis/charts/08_price_vs_sales_by_category.png")
+plt.clf()
 ```
 
 ---
@@ -376,7 +403,7 @@ import joblib
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.preprocessing import LabelEncoder
 import statsmodels.api as sm
 
@@ -406,18 +433,29 @@ rf.fit(X_train, y_train)
 y_pred = rf.predict(X_test)
 
 print(f"MAE: {mean_absolute_error(y_test, y_pred):.2f}")
+print(f"RMSE: {mean_squared_error(y_test, y_pred, squared=False):.2f}")
 print(f"R²: {r2_score(y_test, y_pred):.4f}")
 
 # Save model and encoder
 joblib.dump(rf, "backend/models/rf_model.pkl")
 joblib.dump(le, "backend/models/label_encoder.pkl")
 
-# Chart 8: Feature importance
+# Chart 9: Feature importance
 pd.Series(rf.feature_importances_, index=features).sort_values().plot(
     kind="barh", title="特征重要性"
 )
 plt.tight_layout()
-plt.savefig("analysis/charts/08_feature_importance.png")
+plt.savefig("analysis/charts/09_feature_importance.png")
+plt.clf()
+
+# Chart 10: Actual vs predicted sales
+plt.scatter(y_test, y_pred, alpha=0.3, s=10)
+plt.plot([y.min(), y.max()], [y.min(), y.max()], "r--", lw=1)
+plt.xlabel("Actual Sales")
+plt.ylabel("Predicted Sales")
+plt.title("实际销量 vs 预测销量")
+plt.tight_layout()
+plt.savefig("analysis/charts/10_actual_vs_predicted.png")
 plt.clf()
 ```
 
@@ -454,7 +492,7 @@ plt.plot(range(2, 9), inertias, "o-")
 plt.title("Elbow Method")
 plt.xlabel("K")
 plt.ylabel("Inertia")
-plt.savefig("analysis/charts/09_elbow.png")
+plt.savefig("analysis/charts/11_elbow.png")
 plt.clf()
 
 # Fit with K=4
@@ -474,7 +512,29 @@ plt.xlabel("Price")
 plt.ylabel("Sales Volume")
 plt.legend()
 plt.title("产品聚类结果")
-plt.savefig("analysis/charts/10_cluster_scatter.png")
+plt.savefig("analysis/charts/12_cluster_scatter.png")
+plt.clf()
+
+# Chart: radar chart per cluster
+from math import pi
+cluster_means = df.groupby("cluster")[features].mean()
+categories = features
+N = len(categories)
+angles = [n / float(N) * 2 * pi for n in range(N)]
+angles += angles[:1]
+
+fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
+for c_idx, row in cluster_means.iterrows():
+    values = row.tolist()
+    values += values[:1]
+    ax.plot(angles, values, label=label_map[c_idx], linewidth=2)
+    ax.fill(angles, values, alpha=0.1)
+ax.set_xticks(angles[:-1])
+ax.set_xticklabels(["Price", "Sales Vol", "Reviews", "Rating"])
+ax.set_title("各聚类特征雷达图")
+ax.legend(loc="upper right", bbox_to_anchor=(1.3, 1.1))
+plt.tight_layout()
+plt.savefig("analysis/charts/13_radar_per_cluster.png")
 plt.clf()
 
 df.to_csv("data/cleaned/clustered_data.csv", index=False, encoding="utf-8-sig")
@@ -510,7 +570,7 @@ plt.bar(range(1, len(features)+1), pca.explained_variance_ratio_)
 plt.title("PCA Explained Variance")
 plt.xlabel("Component")
 plt.ylabel("Variance Ratio")
-plt.savefig("analysis/charts/11_pca_scree.png")
+plt.savefig("analysis/charts/14_pca_scree.png")
 plt.clf()
 
 # Use PC1 as competitiveness score (flip sign if needed so higher = better)
@@ -524,7 +584,7 @@ top20.set_index("product_name")["competitiveness_score"].plot(
     kind="barh", title="Top 20 竞争力产品"
 )
 plt.tight_layout()
-plt.savefig("analysis/charts/12_competitiveness_top20.png")
+plt.savefig("analysis/charts/15_competitiveness_top20.png")
 plt.clf()
 
 df.to_csv("data/cleaned/final_data.csv", index=False, encoding="utf-8-sig")
@@ -535,26 +595,57 @@ print("PCA complete. Final dataset saved.")
 
 ## Phase 10 — Backend API (FastAPI)
 
-### 10.1 backend/main.py
+### 10.1 backend/db.py — Database connection utility
+
+```python
+import sqlite3, os
+from dotenv import load_dotenv
+load_dotenv()
+
+DB_PATH = os.getenv("DB_PATH", "data/agrisight.db")
+
+def get_connection():
+    """Return a connection with row_factory set for dict-like access."""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")  # better read concurrency
+    return conn
+
+def query(sql, params=()):
+    """Run a SELECT query and return list of dicts."""
+    conn = get_connection()
+    cur = conn.execute(sql, params)
+    rows = [dict(row) for row in cur.fetchall()]
+    conn.close()
+    return rows
+
+def query_one(sql, params=()):
+    """Run a SELECT query and return a single dict (or None)."""
+    conn = get_connection()
+    cur = conn.execute(sql, params)
+    row = cur.fetchone()
+    conn.close()
+    return dict(row) if row else None
+```
+
+### 10.2 backend/main.py
 
 ```python
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-import joblib, pandas as pd
+import joblib, os
 
 from routes import overview, products, analysis, predict
 
 rf_model = None
 label_encoder = None
-df_cache = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global rf_model, label_encoder, df_cache
+    global rf_model, label_encoder
     rf_model = joblib.load("models/rf_model.pkl")
     label_encoder = joblib.load("models/label_encoder.pkl")
-    df_cache = pd.read_csv("../data/cleaned/final_data.csv")
     yield
 
 app = FastAPI(title="AgriSight API", lifespan=lifespan)
@@ -566,7 +657,7 @@ app.include_router(analysis.router, prefix="/api/analysis")
 app.include_router(predict.router, prefix="/api")
 ```
 
-### 10.2 Prediction endpoint (backend/routes/predict.py)
+### 10.3 Prediction endpoint (backend/routes/predict.py)
 
 ```python
 from fastapi import APIRouter
@@ -598,7 +689,9 @@ def predict_sales(req: PredictRequest):
     }
 ```
 
-### 10.3 Run the server
+> **Note on encoding:** The Random Forest model uses `LabelEncoder` for categories, which is acceptable for tree-based models. The OLS regression (Phase 7) uses the same encoding — for a more rigorous OLS, replace `LabelEncoder` with `pd.get_dummies()` one-hot encoding, but the RF model (used for predictions) is unaffected either way.
+
+### 10.4 Run the server
 
 ```bash
 cd backend
@@ -762,7 +855,7 @@ On the prediction page, after returning a prediction, also call a `/api/analysis
 submission/
 ├── 01_scraper_code/          # jd_scraper.py + requirements.txt
 ├── 02_raw_data/              # raw_data.csv
-├── 03_cleaned_data/          # cleaned_data.csv, final_data.csv, schema.sql, agrisight_dump.sql
+├── 03_cleaned_data/          # cleaned_data.csv, final_data.csv, schema.sql, agrisight.db
 ├── 04_analysis_code/         # 01_descriptive.py ... 05_pca.py
 ├── 05_charts/                # all PNG chart exports
 ├── 06_web_system/            # backend/ + frontend/ full source
