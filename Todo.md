@@ -118,20 +118,25 @@ All tasks organized by phase. Check off items as you complete them.
 
 ---
 
-## Phase 7 — Regression Analysis
+## Phase 7 — Regression Analysis ✅
 
-- [ ] Write `analysis/03_regression.py`
-- [ ] Define target variable: `sales_volume`
-- [ ] Define feature set: price, rating, review_count, is_promoted, category (one-hot encoded)
-- [ ] Split data: 80% train / 20% test
-- [ ] Fit OLS multiple linear regression (`statsmodels`)
-- [ ] Print and save full regression summary (R², p-values, coefficients)
-- [ ] Fit Random Forest Regressor (`sklearn`) as secondary model
-- [ ] Evaluate both models: MAE, RMSE, R² on test set
-- [ ] Plot: regression coefficient bar chart (feature importance)
-- [ ] Plot: actual vs predicted scatter plot
-- [ ] Save trained RandomForest model to `backend/models/rf_model.pkl`
-- [ ] Export charts to `analysis/charts/`
+- [x] Write `analysis/03_regression.py` (OLS + RandomForest)
+- [x] Define target: `sales_volume`; features: price, rating, review_count, is_promoted, category_enc
+- [x] Split data: 80% train / 20% test (random_state=42)
+- [x] Fit OLS regression (`statsmodels`) → R² = 0.598
+- [x] Fit Random Forest (`sklearn`, 100 trees) → R² = 0.709
+- [x] Evaluate: MAE=342, RMSE=550, RF beats OLS by +0.11 R²
+- [x] Plot: feature importance → `10_feature_importance.png`
+- [x] Plot: actual vs predicted → `11_actual_vs_predicted.png`
+- [x] Save `rf_model.pkl` + `label_encoder.pkl` → `backend/models/`
+- [x] Export charts to `analysis/charts/`
+
+**Key findings:**
+- Review count dominates: **69.6%** feature importance — by far the strongest predictor
+- Price: 9.8%, Category: 14.4%, Rating: 5.3%, Promotion: 0.9%
+- is_promoted **not statistically significant** in OLS (p = 0.76)
+- All other features highly significant (p < 0.001)
+- RF explains **71%** of sales variance — good predictive power
 
 ---
 
