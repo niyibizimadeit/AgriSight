@@ -18,7 +18,7 @@ All tasks organized by phase. Check off items as you complete them.
 
 ---
 
-## Phase 2 — Scraping Strategy & Target Selection
+## Phase 2 — Scraping Strategy & Target Selection (Current)
 
 - [ ] Choose primary target platform (JD.com recommended — more accessible than Taobao)
 - [ ] Identify target category URLs for: 水果 (fruits), 蔬菜 (vegetables), 粮油 (grains & oils), 茶叶 (tea), 生鲜 (fresh produce)
