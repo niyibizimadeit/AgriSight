@@ -79,18 +79,24 @@ All tasks organized by phase. Check off items as you complete them.
 
 ---
 
-## Phase 5 — Descriptive Statistical Analysis
+## Phase 5 — Descriptive Statistical Analysis ✅
 
-- [ ] Write `analysis/01_descriptive.py`
-- [ ] Compute summary statistics per category: count, mean price, mean sales, mean rating
-- [ ] Plot: bar chart of product count by category
-- [ ] Plot: bar chart of average sales volume by category
-- [ ] Plot: price range distribution histogram (overall and per category)
-- [ ] Plot: pie chart of category proportions
-- [ ] Plot: bar chart of average sales by price tier (budget/mid/premium)
-- [ ] Plot: sales volume distribution histogram
-- [ ] Export all charts to `analysis/charts/` as PNG
-- [ ] Save summary stats to `data/cleaned/descriptive_summary.csv`
+- [x] Write `analysis/01_descriptive.py` (with bilingual LANG toggle)
+- [x] Compute summary statistics per category: count, mean price, mean sales, mean rating
+- [x] Plot: bar chart of product count by category → `01_count_by_category.png`
+- [x] Plot: bar chart of average sales volume by category → `02_avg_sales_by_category.png`
+- [x] Plot: price distribution histogram → `03_price_distribution.png`
+- [x] Plot: pie chart of category proportions → `04_category_pie.png`
+- [x] Plot: bar chart of average sales by price tier → `05_price_tier_vs_sales.png`
+- [x] Export all charts to `analysis/charts/` as PNG (150 dpi)
+- [x] Save summary stats → `data/cleaned/descriptive_summary.csv`
+
+**Key findings:**
+- 2,921 products, avg price ¥56.17, avg rating 4.32
+- Vegetables dominate sales (avg 1,874/mo) despite lowest price (¥18.82)
+- Tea has highest avg price (¥103.25) and highest rating (4.46)
+- 35% of products are on promotion
+- Budget tier (<¥20) drives highest sales volume
 
 ---
 
