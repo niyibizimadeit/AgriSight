@@ -241,24 +241,26 @@ All tasks organized by phase. Check off items as you complete them.
 
 ---
 
-## Phase 13 — Report Writing
+## Phase 13 — Report Writing ✅
 
-> **Format: LaTeX** — produces `report/agrisight_report.pdf`. Uses a clean academic template with chapters, figures, and tables.
+> **Compiled with Tectonic** → `report/agrisight_report.pdf` (1.1 MB). 12 sections, all 16 charts, Python code listings, academic formatting.
 
-- [ ] Set up LaTeX project: `report/agrisight_report.tex` with `article` or `report` document class
-- [ ] Create `report/figures/` folder — symlink or copy all PNG charts
-- [ ] Write report introduction: project background, objectives, data source (explain why Suning was chosen)
-- [ ] Document scraping methodology and tools used
-- [ ] Document data cleaning steps with before/after stats (include table)
-- [ ] Write descriptive analysis section with chart references (`\includegraphics{...}`)
-- [ ] Write correlation analysis section with key findings + heatmap
-- [ ] Write regression analysis section: model results, coefficient interpretation, OLS table
-- [ ] Write clustering section: cluster descriptions and business interpretation
-- [ ] Write PCA section: explained variance, competitiveness score methodology
-- [ ] Write analysis conclusions and seller suggestions (5–8 actionable recommendations)
-- [ ] Write LLM tool usage description (which parts used AI, what was manually validated)
-- [ ] Compile: `pdflatex agrisight_report.tex` → verify ≥ 2,000 words
-- [ ] Output: `report/agrisight_report.pdf`
+- [x] Set up LaTeX project: `report/agrisight_report.tex` with `ctex` article class (Chinese + English)
+- [x] Create `report/figures/` — all 16 PNG charts copied from `analysis/charts/`
+- [x] Section 1: Introduction — background, objectives, platform evaluation (JD vs 1688 vs Suning)
+- [x] Section 2: Data Collection — scraping methodology, 55 keywords, 13 fields, code listing
+- [x] Section 3: Data Cleaning — 9-step pipeline, before/after table, code listing
+- [x] Section 4: Descriptive Analysis — category stats table, key findings, 4 figures
+- [x] Section 5: Correlation Analysis — Pearson matrix, heatmap, scatter plots, interpretation
+- [x] Section 6: Regression Analysis — OLS summary table, RF metrics, feature importance, code
+- [x] Section 7: Cluster Analysis — K=4 segments table, elbow plot, scatter + radar charts
+- [x] Section 8: PCA — explained variance table, PC1 loadings, scree + top20 charts
+- [x] Section 9: Web System — architecture table, 11 API endpoints, FastAPI + Vue 3 code listings
+- [x] Section 10: Conclusions — 6 actionable seller recommendations
+- [x] Section 11: LLM Tool Usage — per-phase AI assistance table with manual validation notes
+- [x] Section 12: References — 9 cited sources (scikit-learn, FastAPI, Vue, ECharts, etc.)
+- [x] Compile: `tectonic -X compile agrisight_report.tex` → 0 errors
+- [x] Output: `report/agrisight_report.pdf` (well over 2,000 words)
 
 ---
 
