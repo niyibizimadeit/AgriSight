@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clusters — AgriSight</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div id="app">
+  <nav class="bg-white shadow-sm border-b sticky top-0 z-50"><div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between"><a href="../index.html" class="text-lg font-bold text-blue-700 shrink-0">🌾 AgriSight</a><div class="hidden md:flex items-center gap-1"><a v-for="item in nav" :href="item.href" :class="item.active?'bg-blue-600 text-white':'text-gray-600 hover:bg-gray-100'" class="px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap">{{ lang==='zh'?item.label_zh:item.label_en }}</a><button @click="switchLanguage" class="ml-2 px-2 py-1 text-xs border rounded hover:bg-gray-100">🌐</button></div><div class="md:hidden flex items-center gap-2"><button @click="switchLanguage" class="px-2 py-1 text-xs border rounded">🌐</button><button @click="menuOpen=!menuOpen" class="p-2 rounded-lg hover:bg-gray-100"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path v-if="!menuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/><path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div></div><div v-show="menuOpen" class="md:hidden border-t bg-white px-4 py-2 pb-4"><a v-for="item in nav" :href="item.href" @click="menuOpen=false" :class="item.active?'bg-blue-50 text-blue-700 font-medium':'text-gray-600'" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">{{ lang==='zh'?item.label_zh:item.label_en }}</a></div></nav>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <h1 class="text-xl md:text-2xl font-bold mb-4">{{ t('title') }}</h1>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      <div v-for="c in clusters" :key="c.cluster_label" class="bg-white rounded-xl shadow-sm p-4 border text-center">
+        <h3 class="font-bold text-sm mb-1">{{ c.cluster_label }}</h3>
+        <div class="text-2xl font-bold" :class="c.avg_sales>2000?'text-green-600':c.avg_price>100?'text-purple-600':'text-gray-700'">{{ c.count }}</div>
+        <div class="text-xs text-gray-500">products</div>
+        <div class="mt-2 space-y-0.5 text-xs text-left">
+          <div>💰 ¥{{ c.avg_price.toFixed(0) }}</div>
+          <div>📦 {{ c.avg_sales.toFixed(0) }} sales</div>
+          <div>⭐ {{ c.avg_rating.toFixed(2) }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-xl shadow-sm p-4 border"><div ref="c1" style="height:350px;"></div></div>
+      <div class="bg-white rounded-xl shadow-sm p-4 border"><div ref="c2" style="height:350px;"></div></div>
+    </div>
+  </main>
+</div>
+<script>
+const { createApp, ref, onMounted } = Vue;
+createApp({
+  setup() {
+    const lang=ref(localStorage.getItem("agrisight_lang")||"zh"); const menuOpen=ref(false);
+    const L={zh:{title:"产品聚类分析"},en:{title:"Product Clustering Analysis"}};
+    const t=k=>L[lang.value]?.[k]||k;
+    const switchLanguage=()=>{lang.value=lang.value==='zh'?'en':'zh';localStorage.setItem("agrisight_lang",lang.value);location.reload();};
+    const nav=[{href:"../index.html",label_zh:"概览",label_en:"Home",active:false},{href:"products.html",label_zh:"商品",label_en:"Products",active:false},{href:"prediction.html",label_zh:"预测",label_en:"Predict",active:false},{href:"sales-analysis.html",label_zh:"销售",label_en:"Sales",active:false},{href:"influence-factors.html",label_zh:"因素",label_en:"Factors",active:false},{href:"clustering.html",label_zh:"聚类",label_en:"Clusters",active:true},{href:"pca.html",label_zh:"竞争力",label_en:"PCA",active:false},{href:"origin-map.html",label_zh:"产地",label_en:"Origins",active:false},{href:"promotion.html",label_zh:"促销",label_en:"Promos",active:false},{href:"suggestions.html",label_zh:"建议",label_en:"Tips",active:false}];
+
+    const c1=ref(null),c2=ref(null),clusters=ref([]);
+    onMounted(async()=>{
+      const r=await fetch("http://localhost:8000/api/analysis/clusters"); const d=await r.json();
+      clusters.value=d.clusters;
+      echarts.init(c1.value).setOption({
+        title:{text:"Size & Price by Cluster",left:"center",textStyle:{fontSize:14}},
+        tooltip:{trigger:"axis"}, legend:{data:["Products","Avg Price (¥)"],bottom:0},
+        xAxis:{type:"category",data:d.clusters.map(c=>c.cluster_label),axisLabel:{rotate:15,fontSize:10}},
+        yAxis:[{type:"value",name:"Count"},{type:"value",name:"¥"}],
+        series:[{name:"Products",type:"bar",data:d.clusters.map(c=>c.count),itemStyle:{color:"#3B82F6"},barMaxWidth:35},{name:"Avg Price (¥)",type:"line",yAxisIndex:1,data:d.clusters.map(c=>Math.round(c.avg_price)),itemStyle:{color:"#EF4444"}}],
+        grid:{left:45,right:45,top:40,bottom:40},
+      });
+      echarts.init(c2.value).setOption({
+        title:{text:"Feature Radar",left:"center",textStyle:{fontSize:14}},
+        legend:{data:d.clusters.map(c=>c.cluster_label),bottom:0},
+        radar:{indicator:[{name:"Price",max:200},{name:"Sales",max:3500},{name:"Reviews",max:350},{name:"Rating",max:5}]},
+        series:d.clusters.map(c=>({type:"radar",name:c.cluster_label,data:[{value:[c.avg_price,c.avg_sales,c.avg_reviews,c.avg_rating]}]})),
+      });
+      window.addEventListener("resize",()=>{[c1,c2].forEach(r=>{r.value&&echarts.getInstanceByDom(r.value)?.resize();});});
+    });
+    return {lang,menuOpen,t,switchLanguage,nav,c1,c2,clusters};
+  }
+}).mount("#app");
+</script>
+</body>
+</html>

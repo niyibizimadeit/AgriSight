@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PCA Ranking — AgriSight</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div id="app">
+  <nav class="bg-white shadow-sm border-b sticky top-0 z-50"><div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between"><a href="../index.html" class="text-lg font-bold text-blue-700 shrink-0">🌾 AgriSight</a><div class="hidden md:flex items-center gap-1"><a v-for="item in nav" :href="item.href" :class="item.active?'bg-blue-600 text-white':'text-gray-600 hover:bg-gray-100'" class="px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap">{{ lang==='zh'?item.label_zh:item.label_en }}</a><button @click="switchLanguage" class="ml-2 px-2 py-1 text-xs border rounded hover:bg-gray-100">🌐</button></div><div class="md:hidden flex items-center gap-2"><button @click="switchLanguage" class="px-2 py-1 text-xs border rounded">🌐</button><button @click="menuOpen=!menuOpen" class="p-2 rounded-lg hover:bg-gray-100"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path v-if="!menuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/><path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div></div><div v-show="menuOpen" class="md:hidden border-t bg-white px-4 py-2 pb-4"><a v-for="item in nav" :href="item.href" @click="menuOpen=false" :class="item.active?'bg-blue-50 text-blue-700 font-medium':'text-gray-600'" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">{{ lang==='zh'?item.label_zh:item.label_en }}</a></div></nav>
+
+  <main class="max-w-5xl mx-auto px-4 py-6">
+    <h1 class="text-xl md:text-2xl font-bold mb-1">{{ t('title') }}</h1>
+    <p class="text-gray-500 text-sm mb-6">{{ t('subtitle') }}</p>
+    <div class="bg-white rounded-xl shadow-sm p-4 border mb-6"><div ref="chart" style="height:450px;"></div></div>
+    <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
+      <table class="w-full text-xs md:text-sm">
+        <thead class="bg-gray-50 border-b"><tr><th class="text-left px-3 py-2">#</th><th class="text-left px-3 py-2">{{ t('product') }}</th><th class="text-left px-3 py-2 hidden sm:table-cell">{{ t('category') }}</th><th class="text-right px-3 py-2">{{ t('score') }}</th><th class="text-right px-3 py-2 hidden md:table-cell">{{ t('price') }}</th><th class="text-right px-3 py-2 hidden md:table-cell">{{ t('sales') }}</th></tr></thead>
+        <tbody><tr v-for="(p,i) in leaderboard" :key="i" class="border-b last:border-0 hover:bg-gray-50"><td class="px-3 py-2 font-bold" :class="{'text-yellow-500':i<3}">{{ i+1 }}</td><td class="px-3 py-2 max-w-[180px] truncate">{{ p.product_name }}</td><td class="px-3 py-2 hidden sm:table-cell">{{ p.category }}</td><td class="px-3 py-2 text-right font-mono">{{ p.competitiveness_score?.toFixed(1) }}</td><td class="px-3 py-2 text-right hidden md:table-cell">¥{{ p.price?.toFixed(0) }}</td><td class="px-3 py-2 text-right hidden md:table-cell">{{ p.sales_volume?.toLocaleString() }}</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+<script>
+const { createApp, ref, onMounted } = Vue;
+createApp({
+  setup() {
+    const lang=ref(localStorage.getItem("agrisight_lang")||"zh"); const menuOpen=ref(false);
+    const L={zh:{title:"竞争力排名",subtitle:"基于PCA综合评分的产品竞争力排行榜",product:"产品",category:"类目",score:"评分",price:"价格",sales:"销量"},en:{title:"Competitiveness Ranking",subtitle:"Top products ranked by PCA composite score",product:"Product",category:"Category",score:"Score",price:"Price",sales:"Sales"}};
+    const t=k=>L[lang.value]?.[k]||k;
+    const switchLanguage=()=>{lang.value=lang.value==='zh'?'en':'zh';localStorage.setItem("agrisight_lang",lang.value);location.reload();};
+    const nav=[{href:"../index.html",label_zh:"概览",label_en:"Home",active:false},{href:"products.html",label_zh:"商品",label_en:"Products",active:false},{href:"prediction.html",label_zh:"预测",label_en:"Predict",active:false},{href:"sales-analysis.html",label_zh:"销售",label_en:"Sales",active:false},{href:"influence-factors.html",label_zh:"因素",label_en:"Factors",active:false},{href:"clustering.html",label_zh:"聚类",label_en:"Clusters",active:false},{href:"pca.html",label_zh:"竞争力",label_en:"PCA",active:true},{href:"origin-map.html",label_zh:"产地",label_en:"Origins",active:false},{href:"promotion.html",label_zh:"促销",label_en:"Promos",active:false},{href:"suggestions.html",label_zh:"建议",label_en:"Tips",active:false}];
+
+    const chart=ref(null),leaderboard=ref([]);
+    onMounted(async()=>{
+      const r=await fetch("http://localhost:8000/api/analysis/pca?limit=20"); const d=await r.json();
+      leaderboard.value=d.leaderboard;
+      const top=d.leaderboard.slice(0,20);
+      echarts.init(chart.value).setOption({
+        title:{text:"Top 20 Most Competitive Products",left:"center",textStyle:{fontSize:14}},
+        tooltip:{trigger:"axis",axisPointer:{type:"shadow"}},
+        xAxis:{type:"value",name:"Score"},
+        yAxis:{type:"category",data:top.map(p=>p.product_name.substring(0,30)+"...").reverse(),axisLabel:{fontSize:9}},
+        series:[{type:"bar",data:top.map(p=>p.competitiveness_score).reverse(),barMaxWidth:16,label:{show:true,position:"right",formatter:"{c}",fontSize:10},itemStyle:{color:p=>['#EF4444','#F59E0B','#10B981','#3B82F6','#8B5CF6'][p.dataIndex%5]}}],
+        grid:{left:5,right:40,top:40,bottom:20},
+      });
+    });
+    return {lang,menuOpen,t,switchLanguage,nav,chart,leaderboard};
+  }
+}).mount("#app");
+</script>
+</body>
+</html>

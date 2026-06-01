@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Origins — AgriSight</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div id="app">
+  <nav class="bg-white shadow-sm border-b sticky top-0 z-50"><div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between"><a href="../index.html" class="text-lg font-bold text-blue-700 shrink-0">🌾 AgriSight</a><div class="hidden md:flex items-center gap-1"><a v-for="item in nav" :href="item.href" :class="item.active?'bg-blue-600 text-white':'text-gray-600 hover:bg-gray-100'" class="px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap">{{ lang==='zh'?item.label_zh:item.label_en }}</a><button @click="switchLanguage" class="ml-2 px-2 py-1 text-xs border rounded hover:bg-gray-100">🌐</button></div><div class="md:hidden flex items-center gap-2"><button @click="switchLanguage" class="px-2 py-1 text-xs border rounded">🌐</button><button @click="menuOpen=!menuOpen" class="p-2 rounded-lg hover:bg-gray-100"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path v-if="!menuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/><path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div></div><div v-show="menuOpen" class="md:hidden border-t bg-white px-4 py-2 pb-4"><a v-for="item in nav" :href="item.href" @click="menuOpen=false" :class="item.active?'bg-blue-50 text-blue-700 font-medium':'text-gray-600'" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">{{ lang==='zh'?item.label_zh:item.label_en }}</a></div></nav>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <h1 class="text-xl md:text-2xl font-bold mb-1">{{ t('title') }}</h1>
+    <p class="text-gray-500 text-sm mb-4">{{ t('subtitle') }}</p>
+    <div class="flex flex-wrap gap-2 mb-4">
+      <button v-for="cat in categories" :key="cat" @click="selectedCat=cat" :class="selectedCat===cat?'bg-blue-600 text-white':'bg-white text-gray-600 border hover:bg-gray-50'" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">{{ cat }}</button>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-xl shadow-sm p-4 border"><div ref="chart" style="height:400px;"></div></div>
+      <div class="bg-white rounded-xl shadow-sm p-4 border">
+        <h3 class="font-semibold mb-3 text-sm">{{ t('topOrigins') }} — {{ selectedCat }}</h3>
+        <div v-if="origins.length===0" class="text-gray-400 text-sm">{{ t('noData') }}</div>
+        <div v-for="(o,i) in origins.slice(0,12)" :key="i" class="flex justify-between py-2 border-b last:border-0 text-sm"><span>{{ o.origin }}</span><span class="font-mono text-gray-500">{{ o.count }}</span></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+const { createApp, ref, watch, onMounted } = Vue;
+createApp({
+  setup() {
+    const lang=ref(localStorage.getItem("agrisight_lang")||"zh"); const menuOpen=ref(false);
+    const L={zh:{title:"产品产地分布",subtitle:"各类目农产品主要产地",topOrigins:"主要产地",noData:"暂无数据"},en:{title:"Product Origin Distribution",subtitle:"Where products originate from by category",topOrigins:"Top Origins",noData:"No data available"}};
+    const t=k=>L[lang.value]?.[k]||k;
+    const switchLanguage=()=>{lang.value=lang.value==='zh'?'en':'zh';localStorage.setItem("agrisight_lang",lang.value);location.reload();};
+    const nav=[{href:"../index.html",label_zh:"概览",label_en:"Home",active:false},{href:"products.html",label_zh:"商品",label_en:"Products",active:false},{href:"prediction.html",label_zh:"预测",label_en:"Predict",active:false},{href:"sales-analysis.html",label_zh:"销售",label_en:"Sales",active:false},{href:"influence-factors.html",label_zh:"因素",label_en:"Factors",active:false},{href:"clustering.html",label_zh:"聚类",label_en:"Clusters",active:false},{href:"pca.html",label_zh:"竞争力",label_en:"PCA",active:false},{href:"origin-map.html",label_zh:"产地",label_en:"Origins",active:true},{href:"promotion.html",label_zh:"促销",label_en:"Promos",active:false},{href:"suggestions.html",label_zh:"建议",label_en:"Tips",active:false}];
+
+    const chart=ref(null),selectedCat=ref("水果"),categories=["水果","蔬菜","粮油","茶叶","生鲜"],origins=ref([]); let ci=null;
+
+    async function load(){
+      const r=await fetch(`http://localhost:8000/api/products?category=${encodeURIComponent(selectedCat.value)}&limit=200`); const d=await r.json();
+      const counts={}; d.items.forEach(p=>{if(p.origin&&p.origin!=="未知"){counts[p.origin]=(counts[p.origin]||0)+1;}});
+      origins.value=Object.entries(counts).map(([k,v])=>({origin:k,count:v})).sort((a,b)=>b.count-a.count);
+      if(!ci) ci=echarts.init(chart.value);
+      ci.setOption({title:{text:`${selectedCat.value} — Origin Distribution`,left:"center",textStyle:{fontSize:14}},tooltip:{trigger:"axis"},xAxis:{type:"category",data:origins.value.map(o=>o.origin).slice(0,15),axisLabel:{rotate:35,fontSize:10}},yAxis:{type:"value",name:"Products"},series:[{type:"bar",data:origins.value.map(o=>o.count).slice(0,15),itemStyle:{color:"#10B981"},barMaxWidth:35}],grid:{left:45,right:15,top:40,bottom:60}});
+    }
+
+    onMounted(load); watch(selectedCat,load);
+    window.addEventListener("resize",()=>ci?.resize());
+    return {lang,menuOpen,t,switchLanguage,nav,chart,selectedCat,categories,origins};
+  }
+}).mount("#app");
+</script>
+</body>
+</html>

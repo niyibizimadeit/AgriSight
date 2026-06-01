@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sales Analysis — AgriSight</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div id="app">
+  <nav class="bg-white shadow-sm border-b sticky top-0 z-50"><div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between"><a href="../index.html" class="text-lg font-bold text-blue-700 shrink-0">🌾 AgriSight</a><div class="hidden md:flex items-center gap-1"><a v-for="item in nav" :href="item.href" :class="item.active?'bg-blue-600 text-white':'text-gray-600 hover:bg-gray-100'" class="px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap">{{ lang==='zh'?item.label_zh:item.label_en }}</a><button @click="switchLanguage" class="ml-2 px-2 py-1 text-xs border rounded hover:bg-gray-100">🌐</button></div><div class="md:hidden flex items-center gap-2"><button @click="switchLanguage" class="px-2 py-1 text-xs border rounded">🌐</button><button @click="menuOpen=!menuOpen" class="p-2 rounded-lg hover:bg-gray-100"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path v-if="!menuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/><path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div></div><div v-show="menuOpen" class="md:hidden border-t bg-white px-4 py-2 pb-4"><a v-for="item in nav" :href="item.href" @click="menuOpen=false" :class="item.active?'bg-blue-50 text-blue-700 font-medium':'text-gray-600'" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">{{ lang==='zh'?item.label_zh:item.label_en }}</a></div></nav>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <h1 class="text-xl md:text-2xl font-bold mb-4">{{ t('title') }}</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-xl shadow-sm p-4 border"><div ref="c1" style="height:350px;"></div></div>
+      <div class="bg-white rounded-xl shadow-sm p-4 border"><div ref="c2" style="height:350px;"></div></div>
+      <div class="bg-white rounded-xl shadow-sm p-4 border"><div ref="c3" style="height:350px;"></div></div>
+      <div class="bg-white rounded-xl shadow-sm p-4 border"><div ref="c4" style="height:350px;"></div></div>
+    </div>
+  </main>
+</div>
+<script>
+const { createApp, ref, onMounted } = Vue;
+createApp({
+  setup() {
+    const lang=ref(localStorage.getItem("agrisight_lang")||"zh"); const menuOpen=ref(false);
+    const L={zh:{title:"销售特征分析"},en:{title:"Sales Feature Analysis"}};
+    const t=k=>L[lang.value]?.[k]||k;
+    const switchLanguage=()=>{lang.value=lang.value==='zh'?'en':'zh';localStorage.setItem("agrisight_lang",lang.value);location.reload();};
+    const nav=[{href:"../index.html",label_zh:"概览",label_en:"Home",active:false},{href:"products.html",label_zh:"商品",label_en:"Products",active:false},{href:"prediction.html",label_zh:"预测",label_en:"Predict",active:false},{href:"sales-analysis.html",label_zh:"销售",label_en:"Sales",active:true},{href:"influence-factors.html",label_zh:"因素",label_en:"Factors",active:false},{href:"clustering.html",label_zh:"聚类",label_en:"Clusters",active:false},{href:"pca.html",label_zh:"竞争力",label_en:"PCA",active:false},{href:"origin-map.html",label_zh:"产地",label_en:"Origins",active:false},{href:"promotion.html",label_zh:"促销",label_en:"Promos",active:false},{href:"suggestions.html",label_zh:"建议",label_en:"Tips",active:false}];
+
+    const c1=ref(null),c2=ref(null),c3=ref(null),c4=ref(null);
+    onMounted(async()=>{
+      const r1=await fetch("http://localhost:8000/api/analysis/sales-by-category"); const d1=await r1.json();
+      const cats=lang.value==='zh'?d1.categories:d1.categories_en;
+      echarts.init(c1.value).setOption({title:{text:"Sales Volume by Category",left:"center",textStyle:{fontSize:13}},xAxis:{type:"category",data:cats,axisLabel:{fontSize:10}},yAxis:{type:"value"},series:[{type:"bar",data:d1.values,itemStyle:{color:"#3B82F6"},barMaxWidth:40}],tooltip:{trigger:"axis"},grid:{left:50,right:10,top:35,bottom:30}});
+
+      const r2=await fetch("http://localhost:8000/api/analysis/correlation"); const d2=await r2.json();
+      const feats=Object.keys(d2); const hm=[]; feats.forEach((f,i)=>{feats.forEach((g,j)=>{hm.push([i,j,Math.round(d2[f][g]*100)/100]);});});
+      echarts.init(c2.value).setOption({title:{text:"Correlation Heatmap",left:"center",textStyle:{fontSize:13}},tooltip:{},xAxis:{type:"category",data:feats,axisLabel:{rotate:30,fontSize:10}},yAxis:{type:"category",data:feats,axisLabel:{fontSize:10}},visualMap:{min:-1,max:1,inRange:{color:["#3B82F6","#fff","#EF4444"]},calculable:true,orient:"horizontal",left:"center",bottom:0},series:[{type:"heatmap",data:hm,label:{show:true,fontSize:10}}],grid:{left:80,right:20,top:35,bottom:60}});
+
+      const r3=await fetch("http://localhost:8000/api/overview"); const d3=await r3.json();
+      echarts.init(c3.value).setOption({title:{text:"Avg Price by Category",left:"center",textStyle:{fontSize:13}},xAxis:{type:"category",data:cats,axisLabel:{fontSize:10}},yAxis:{type:"value",name:"¥"},series:[{type:"bar",data:d3.categories.map(c=>Math.round(c.avg_price)),itemStyle:{color:"#10B981"},barMaxWidth:40}],grid:{left:50,right:10,top:35,bottom:30}});
+
+      const r4=await fetch("http://localhost:8000/api/analysis/promotion-impact"); const d4=await r4.json();
+      echarts.init(c4.value).setOption({title:{text:`Promotion Impact (${d4.sales_lift_pct}% lift)`,left:"center",textStyle:{fontSize:13}},xAxis:{type:"category",data:["Promoted","Non-Promoted"],axisLabel:{fontSize:10}},yAxis:{type:"value",name:"Avg Sales"},series:[{type:"bar",data:[Math.round(d4.promoted.avg_sales),Math.round(d4.non_promoted.avg_sales)],itemStyle:{color:"#F59E0B"},barMaxWidth:50,label:{show:true,position:"top",fontSize:12}}],grid:{left:50,right:10,top:35,bottom:30}});
+
+      window.addEventListener("resize",()=>{[c1,c2,c3,c4].forEach(r=>{r.value&&echarts.getInstanceByDom(r.value)?.resize();});});
+    });
+    return {lang,menuOpen,t,switchLanguage,nav,c1,c2,c3,c4};
+  }
+}).mount("#app");
+</script>
+</body>
+</html>

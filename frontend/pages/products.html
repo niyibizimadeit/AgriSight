@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Products — AgriSight</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div id="app">
+  <nav class="bg-white shadow-sm border-b sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="../index.html" class="text-lg font-bold text-blue-700 shrink-0">🌾 AgriSight</a>
+      <div class="hidden md:flex items-center gap-1">
+        <a v-for="item in nav" :href="item.href" :class="item.active?'bg-blue-600 text-white':'text-gray-600 hover:bg-gray-100'" class="px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap">{{ lang==='zh'?item.label_zh:item.label_en }}</a>
+        <button @click="switchLanguage" class="ml-2 px-2 py-1 text-xs border rounded hover:bg-gray-100">🌐</button>
+      </div>
+      <div class="md:hidden flex items-center gap-2">
+        <button @click="switchLanguage" class="px-2 py-1 text-xs border rounded">🌐</button>
+        <button @click="menuOpen=!menuOpen" class="p-2 rounded-lg hover:bg-gray-100">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path v-if="!menuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/><path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div v-show="menuOpen" class="md:hidden border-t bg-white px-4 py-2 pb-4">
+      <a v-for="item in nav" :href="item.href" @click="menuOpen=false" :class="item.active?'bg-blue-50 text-blue-700 font-medium':'text-gray-600'" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">{{ lang==='zh'?item.label_zh:item.label_en }}</a>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <h1 class="text-xl md:text-2xl font-bold mb-4">{{ t('title') }}</h1>
+    <div class="bg-white rounded-xl shadow-sm p-3 md:p-4 border mb-4 flex flex-wrap gap-2 items-end text-sm">
+      <div><label class="text-xs text-gray-500 block">{{ t('category') }}</label><select v-model="f.category" @change="load(1)" class="border rounded px-2 py-1"><option value="">{{ t('all') }}</option><option v-for="c in opts.categories" :value="c">{{ c }}</option></select></div>
+      <div><label class="text-xs text-gray-500 block">{{ t('minP') }}</label><input v-model.number="f.price_min" @change="load(1)" type="number" class="border rounded px-2 py-1 w-20"/></div>
+      <div><label class="text-xs text-gray-500 block">{{ t('maxP') }}</label><input v-model.number="f.price_max" @change="load(1)" type="number" class="border rounded px-2 py-1 w-20"/></div>
+      <div><label class="text-xs text-gray-500 block">{{ t('origin') }}</label><select v-model="f.origin" @change="load(1)" class="border rounded px-2 py-1"><option value="">{{ t('all') }}</option><option v-for="o in opts.origins" :value="o">{{ o }}</option></select></div>
+      <button @click="f={};load(1)" class="text-red-500 text-xs hover:underline">{{ t('reset') }}</button>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b"><tr>
+          <th class="text-left px-3 py-2 text-xs">#</th><th class="text-left px-3 py-2 text-xs">{{ t('name') }}</th>
+          <th class="text-left px-3 py-2 text-xs hidden sm:table-cell">{{ t('category') }}</th>
+          <th class="text-right px-3 py-2 text-xs">{{ t('price') }}</th>
+          <th class="text-right px-3 py-2 text-xs hidden md:table-cell">{{ t('sales') }}</th>
+          <th class="text-right px-3 py-2 text-xs hidden md:table-cell">{{ t('rating') }}</th>
+        </tr></thead>
+        <tbody>
+          <tr v-for="(p,i) in items" :key="i" class="border-b last:border-0 hover:bg-gray-50">
+            <td class="px-3 py-2 text-gray-400 text-xs">{{ (page-1)*limit+i+1 }}</td>
+            <td class="px-3 py-2 max-w-[200px] truncate text-xs font-medium" :title="p.product_name">{{ p.product_name }}</td>
+            <td class="px-3 py-2 text-xs hidden sm:table-cell">{{ p.category }}</td>
+            <td class="px-3 py-2 text-right text-xs">¥{{ p.price?.toFixed(0) }}</td>
+            <td class="px-3 py-2 text-right text-xs hidden md:table-cell">{{ p.sales_volume?.toLocaleString() }}</td>
+            <td class="px-3 py-2 text-right text-xs hidden md:table-cell">{{ p.rating?.toFixed(1) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex justify-between items-center mt-3 text-xs">
+      <span class="text-gray-500">{{ t('show') }} {{ (page-1)*limit+1 }}–{{ Math.min(page*limit,total) }} {{ t('of') }} {{ total }}</span>
+      <div class="flex gap-1"><button @click="load(page-1)" :disabled="page<=1" class="px-2 py-1 border rounded disabled:opacity-30">←</button><span class="px-2 py-1">{{ page }}/{{ pages }}</span><button @click="load(page+1)" :disabled="page>=pages" class="px-2 py-1 border rounded disabled:opacity-30">→</button></div>
+    </div>
+  </main>
+</div>
+<script>
+const { createApp, ref, reactive, onMounted } = Vue;
+createApp({
+  setup() {
+    const lang=ref(localStorage.getItem("agrisight_lang")||"zh");
+    const menuOpen=ref(false);
+    const L={zh:{title:"商品列表",category:"类目",minP:"最低价",maxP:"最高价",origin:"产地",reset:"重置",name:"名称",price:"价格",sales:"销量",rating:"评分",all:"全部",show:"显示",of:"共"},en:{title:"Product List",category:"Category",minP:"Min ¥",maxP:"Max ¥",origin:"Origin",reset:"Reset",name:"Name",price:"Price",sales:"Sales",rating:"Rating",all:"All",show:"Showing",of:"of"}};
+    const t=k=>L[lang.value]?.[k]||k;
+    const switchLanguage=()=>{lang.value=lang.value==='zh'?'en':'zh';localStorage.setItem("agrisight_lang",lang.value);location.reload();};
+    const nav=[{href:"../index.html",label_zh:"概览",label_en:"Home",active:false},{href:"products.html",label_zh:"商品",label_en:"Products",active:true},{href:"prediction.html",label_zh:"预测",label_en:"Predict",active:false},{href:"sales-analysis.html",label_zh:"销售",label_en:"Sales",active:false},{href:"influence-factors.html",label_zh:"因素",label_en:"Factors",active:false},{href:"clustering.html",label_zh:"聚类",label_en:"Clusters",active:false},{href:"pca.html",label_zh:"竞争力",label_en:"PCA",active:false},{href:"origin-map.html",label_zh:"产地",label_en:"Origins",active:false},{href:"promotion.html",label_zh:"促销",label_en:"Promos",active:false},{href:"suggestions.html",label_zh:"建议",label_en:"Tips",active:false}];
+
+    const items=ref([]),total=ref(0),page=ref(1),pages=ref(1),limit=50;
+    const f=reactive({category:"",price_min:null,price_max:null,origin:""});
+    const opts=reactive({categories:[],origins:[]});
+
+    async function load(p){page.value=p;const q=new URLSearchParams({page:p,limit});if(f.category)q.set("category",f.category);if(f.price_min)q.set("price_min",f.price_min);if(f.price_max)q.set("price_max",f.price_max);if(f.origin)q.set("origin",f.origin);const r=await fetch(`http://localhost:8000/api/products?${q}`);const d=await r.json();items.value=d.items;total.value=d.total;pages.value=d.pages;opts.categories=d.filters.categories;opts.origins=d.filters.origins;}
+    onMounted(()=>load(1));
+    return {lang,menuOpen,t,switchLanguage,nav,items,total,page,pages,limit,f,opts,load};
+  }
+}).mount("#app");
+</script>
+</body>
+</html>

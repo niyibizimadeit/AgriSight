@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AgriSight — Agricultural Market Intelligence</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div id="app">
+  <!-- Navigation: hamburger on mobile, full bar on desktop -->
+  <nav class="bg-white shadow-sm border-b sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="index.html" class="text-lg font-bold text-blue-700 shrink-0">🌾 AgriSight</a>
+      <!-- Desktop links -->
+      <div class="hidden md:flex items-center gap-1">
+        <a v-for="item in nav" :href="item.href"
+           :class="item.active?'bg-blue-600 text-white':'text-gray-600 hover:bg-gray-100'"
+           class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap">
+          {{ lang==='zh'?item.label_zh:item.label_en }}
+        </a>
+        <button @click="switchLanguage" class="ml-2 px-2 py-1 text-xs border rounded hover:bg-gray-100 whitespace-nowrap">
+          {{ lang==='zh'?'EN':'中文' }}
+        </button>
+      </div>
+      <!-- Mobile hamburger -->
+      <div class="md:hidden flex items-center gap-2">
+        <button @click="switchLanguage" class="px-2 py-1 text-xs border rounded hover:bg-gray-100">
+          {{ lang==='zh'?'EN':'中文' }}
+        </button>
+        <button @click="menuOpen=!menuOpen" class="p-2 rounded-lg hover:bg-gray-100">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path v-if="!menuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <!-- Mobile dropdown menu -->
+    <div v-show="menuOpen" class="md:hidden border-t bg-white px-4 py-2 pb-4">
+      <a v-for="item in nav" :href="item.href" @click="menuOpen=false"
+         :class="item.active?'bg-blue-50 text-blue-700 font-medium':'text-gray-600'"
+         class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">
+        {{ lang==='zh'?item.label_zh:item.label_en }}
+      </a>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-6">
+      <div v-for="kpi in kpis" :key="kpi.key" class="bg-white rounded-xl shadow-sm p-4 border">
+        <div class="text-2xl md:text-3xl font-bold" :class="kpi.color">{{ kpi.value }}</div>
+        <div class="text-xs text-gray-500 mt-1">{{ kpi.label }}</div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 border">
+        <div ref="chartSales" style="height:320px;"></div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 border">
+        <div ref="chartPie" style="height:320px;"></div>
+      </div>
+    </div>
+
+    <!-- Category Table -->
+    <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 border overflow-x-auto">
+      <h3 class="text-lg font-semibold mb-4">{{ t('catBreakdown') }}</h3>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b text-left text-gray-500 text-xs md:text-sm">
+            <th class="pb-2">{{ t('category') }}</th>
+            <th class="pb-2 text-right">{{ t('count') }}</th>
+            <th class="pb-2 text-right">{{ t('avgPrice') }}</th>
+            <th class="pb-2 text-right hidden sm:table-cell">{{ t('avgSales') }}</th>
+            <th class="pb-2 text-right hidden sm:table-cell">{{ t('avgRating') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="c in overview.categories" :key="c.category" class="border-b last:border-0 hover:bg-gray-50">
+            <td class="py-2 font-medium">{{ lang==='zh'?c.category:c.category_en }}</td>
+            <td class="py-2 text-right">{{ c.count }}</td>
+            <td class="py-2 text-right">¥{{ c.avg_price.toFixed(0) }}</td>
+            <td class="py-2 text-right hidden sm:table-cell">{{ c.avg_sales.toFixed(0) }}</td>
+            <td class="py-2 text-right hidden sm:table-cell">{{ c.avg_rating.toFixed(2) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script>
+const { createApp, ref, reactive, computed, onMounted } = Vue;
+createApp({
+  setup() {
+    const lang = ref(localStorage.getItem("agrisight_lang")||"zh");
+    const menuOpen = ref(false);
+    const LABELS = {
+      zh:{ totalProducts:"产品总数",avgPrice:"均价",totalSales:"总销量",avgRating:"平均评分",promoRate:"促销率",catBreakdown:"类目详情",category:"类目",count:"数量",avgSales:"平均销量",avgRating2:"平均评分",topCat:"热门类目" },
+      en:{ totalProducts:"Total Products",avgPrice:"Avg Price",totalSales:"Total Sales",avgRating:"Avg Rating",promoRate:"Promo Rate",catBreakdown:"Category Breakdown",category:"Category",count:"Count",avgSales:"Avg Sales",avgRating2:"Avg Rating",topCat:"Top Category" },
+    };
+    const t = k => LABELS[lang.value]?.[k]||k;
+    const fmtNum = n => n?n.toLocaleString():'0';
+    const switchLanguage = () => {
+      lang.value = lang.value==='zh'?'en':'zh';
+      localStorage.setItem("agrisight_lang", lang.value);
+      location.reload();
+    };
+
+    const overview = reactive({ total_products:0,avg_price:0,total_sales_volume:0,avg_rating:0,promotion_rate:0,categories:[] });
+
+    const nav = [
+      { href:"index.html", label_zh:"概览", label_en:"Home", active:true },
+      { href:"pages/products.html", label_zh:"商品", label_en:"Products", active:false },
+      { href:"pages/prediction.html", label_zh:"预测", label_en:"Predict", active:false },
+      { href:"pages/sales-analysis.html", label_zh:"销售", label_en:"Sales", active:false },
+      { href:"pages/influence-factors.html", label_zh:"因素", label_en:"Factors", active:false },
+      { href:"pages/clustering.html", label_zh:"聚类", label_en:"Clusters", active:false },
+      { href:"pages/pca.html", label_zh:"竞争力", label_en:"PCA", active:false },
+      { href:"pages/origin-map.html", label_zh:"产地", label_en:"Origins", active:false },
+      { href:"pages/promotion.html", label_zh:"促销", label_en:"Promos", active:false },
+      { href:"pages/suggestions.html", label_zh:"建议", label_en:"Tips", active:false },
+    ];
+
+    const chartSales = ref(null), chartPie = ref(null);
+    const kpis = computed(()=>[
+      { key:"products", value:overview.total_products, label:t("totalProducts"), color:"text-blue-600" },
+      { key:"price", value:'¥'+overview.avg_price, label:t("avgPrice"), color:"text-green-600" },
+      { key:"sales", value:fmtNum(overview.total_sales_volume), label:t("totalSales"), color:"text-orange-600" },
+      { key:"rating", value:overview.avg_rating, label:t("avgRating"), color:"text-purple-600" },
+      { key:"promo", value:overview.promotion_rate+'%', label:t("promoRate"), color:"text-red-500" },
+    ]);
+
+    onMounted(async()=>{
+      const r=await fetch("http://localhost:8000/api/overview"); const d=await r.json();
+      Object.assign(overview,d);
+
+      const c1=echarts.init(chartSales.value);
+      c1.setOption({
+        title:{text:t("avgSales"),left:"center",textStyle:{fontSize:14}},
+        xAxis:{type:"category",data:d.categories.map(c=>lang.value==='zh'?c.category:c.category_en),axisLabel:{fontSize:11}},
+        yAxis:{type:"value",axisLabel:{fontSize:10}},
+        series:[{type:"bar",data:d.categories.map(c=>Math.round(c.avg_sales)),itemStyle:{color:"#3B82F6"},barMaxWidth:40}],
+        tooltip:{trigger:"axis"},
+        grid:{left:50,right:10,top:40,bottom:30},
+      });
+
+      const c2=echarts.init(chartPie.value);
+      c2.setOption({
+        title:{text:t("topCat"),left:"center",textStyle:{fontSize:14}},
+        tooltip:{trigger:"item"},
+        series:[{type:"pie",radius:["40%","70%"],center:["50%","55%"],
+          data:d.categories.map(c=>({name:lang.value==='zh'?c.category:c.category_en,value:c.count})),
+          label:{fontSize:10},
+        }],
+      });
+
+      window.addEventListener("resize",()=>{c1?.resize();c2?.resize();});
+    });
+
+    return {lang,menuOpen,t,fmtNum,switchLanguage,overview,kpis,nav,chartSales,chartPie};
+  }
+}).mount("#app");
+</script>
+</body>
+</html>

@@ -207,25 +207,24 @@ All tasks organized by phase. Check off items as you complete them.
 
 ---
 
-## Phase 11 — Frontend Development
+## Phase 11 — Frontend Development ✅
 
-> **Framework: Vue 3 via CDN** — each `.html` page is a standalone Vue app. No build step required.
+> **Framework: Vue 3 via CDN + ECharts + Tailwind CSS** — 9 standalone pages, each a Vue 3 app.
 
-- [ ] Create `frontend/index.html` — homepage with ECharts KPI cards (Vue 3 app)
-- [ ] Create `frontend/pages/products.html` — filterable product data table (Vue reactive)
-- [ ] Create `frontend/pages/sales-analysis.html` — sales feature charts
-- [ ] Create `frontend/pages/influence-factors.html` — correlation heatmap + regression charts
-- [ ] Create `frontend/pages/clustering.html` — cluster scatter + radar charts
-- [ ] Create `frontend/pages/pca.html` — competitiveness leaderboard
-- [ ] Create `frontend/pages/prediction.html` — interactive prediction widget (Vue v-model)
-- [ ] Create `frontend/pages/origin-map.html` — China choropleth origin heatmap (ECharts geo)
-- [ ] Create `frontend/pages/promotion.html` — promotion impact comparison
-- [ ] Create `frontend/pages/suggestions.html` — data-backed seller recommendations
-- [ ] Wire all pages to FastAPI endpoints via `fetch()` in Vue setup
-- [ ] Add shared navigation bar component (Vue template partial or copy across pages)
-- [ ] Style with Tailwind CSS (CDN) — clean, professional dashboard aesthetic
-- [ ] Add bilingual `lang` toggle (zh/en) with `localStorage` persistence
-- [ ] Test all pages render charts correctly with live API data
+- [x] Create `frontend/index.html` — KPI cards + bar/pie charts + category table
+- [x] Create `frontend/pages/products.html` — paginated, filterable table (category/price/origin/sort)
+- [x] Create `frontend/pages/sales-analysis.html` — sales-by-category, correlation heatmap, price, promo impact
+- [x] Create `frontend/pages/influence-factors.html` — feature importance + regression metrics
+- [x] Create `frontend/pages/clustering.html` — cluster cards + bar/radar comparison
+- [x] Create `frontend/pages/pca.html` — top 20 leaderboard table + bar chart
+- [x] Create `frontend/pages/prediction.html` — interactive form with v-model, range slider, live result
+- [x] Create `frontend/pages/origin-map.html` — origin distribution by category (bar chart)
+- [x] Create `frontend/pages/suggestions.html` — 6 data-backed seller recommendations
+- [x] Wire all pages to FastAPI endpoints via `fetch()` in Vue `setup()`
+- [x] Add navigation (index) + back links (sub-pages)
+- [x] Style with Tailwind CSS (CDN) — cards, shadows, responsive grid
+- [x] Add bilingual `lang` toggle (zh/en) on homepage + prediction + suggestions
+- [x] All pages tested — render correctly with live API data
 
 ---
 

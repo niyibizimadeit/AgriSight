@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Suggestions — AgriSight</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div id="app">
+  <nav class="bg-white shadow-sm border-b sticky top-0 z-50"><div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between"><a href="../index.html" class="text-lg font-bold text-blue-700 shrink-0">🌾 AgriSight</a><div class="hidden md:flex items-center gap-1"><a v-for="item in nav" :href="item.href" :class="item.active?'bg-blue-600 text-white':'text-gray-600 hover:bg-gray-100'" class="px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap">{{ lang==='zh'?item.label_zh:item.label_en }}</a><button @click="switchLanguage" class="ml-2 px-2 py-1 text-xs border rounded hover:bg-gray-100">🌐</button></div><div class="md:hidden flex items-center gap-2"><button @click="switchLanguage" class="px-2 py-1 text-xs border rounded">🌐</button><button @click="menuOpen=!menuOpen" class="p-2 rounded-lg hover:bg-gray-100"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path v-if="!menuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/><path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div></div><div v-show="menuOpen" class="md:hidden border-t bg-white px-4 py-2 pb-4"><a v-for="item in nav" :href="item.href" @click="menuOpen=false" :class="item.active?'bg-blue-50 text-blue-700 font-medium':'text-gray-600'" class="block px-3 py-2 rounded-lg text-sm hover:bg-gray-50">{{ lang==='zh'?item.label_zh:item.label_en }}</a></div></nav>
+
+  <main class="max-w-3xl mx-auto px-4 py-6">
+    <h1 class="text-xl md:text-2xl font-bold mb-1">{{ t('title') }}</h1>
+    <p class="text-gray-500 text-sm mb-6">{{ t('subtitle') }}</p>
+    <div class="space-y-4">
+      <div v-for="(s,i) in suggestions" :key="i" class="bg-white rounded-xl shadow-sm p-4 md:p-6 border hover:shadow-md transition-shadow">
+        <div class="flex items-start gap-3 md:gap-4">
+          <div class="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white font-bold shrink-0" :class="s.color">{{ i+1 }}</div>
+          <div>
+            <h3 class="text-base md:text-lg font-semibold mb-1">{{ s.title }}</h3>
+            <p class="text-gray-600 text-sm mb-2">{{ s.detail }}</p>
+            <div class="bg-gray-50 rounded-lg p-2 md:p-3 text-xs text-gray-500"><b>{{ t('evidence') }}:</b> {{ s.evidence }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+const { createApp, ref } = Vue;
+createApp({
+  setup() {
+    const lang=ref(localStorage.getItem("agrisight_lang")||"zh"); const menuOpen=ref(false);
+    const L={zh:{title:"运营建议",subtitle:"基于数据分析的农产品销售优化建议",evidence:"数据依据"},en:{title:"Operational Suggestions",subtitle:"Data-backed recommendations for agricultural sellers",evidence:"Data evidence"}};
+    const t=k=>L[lang.value]?.[k]||k;
+    const switchLanguage=()=>{lang.value=lang.value==='zh'?'en':'zh';localStorage.setItem("agrisight_lang",lang.value);location.reload();};
+    const nav=[{href:"../index.html",label_zh:"概览",label_en:"Home",active:false},{href:"products.html",label_zh:"商品",label_en:"Products",active:false},{href:"prediction.html",label_zh:"预测",label_en:"Predict",active:false},{href:"sales-analysis.html",label_zh:"销售",label_en:"Sales",active:false},{href:"influence-factors.html",label_zh:"因素",label_en:"Factors",active:false},{href:"clustering.html",label_zh:"聚类",label_en:"Clusters",active:false},{href:"pca.html",label_zh:"竞争力",label_en:"PCA",active:false},{href:"origin-map.html",label_zh:"产地",label_en:"Origins",active:false},{href:"promotion.html",label_zh:"促销",label_en:"Promos",active:false},{href:"suggestions.html",label_zh:"建议",label_en:"Tips",active:true}];
+
+    const zh=lang.value==="zh";
+    const suggestions=[
+      {title:zh?"定价在 ¥20–80 区间":"Price in the ¥20–80 Range",color:"bg-blue-600",
+       detail:zh?"中端价位（¥20–80）产品占41%，销量稳定且评分最高（4.66）。过低的价格(<¥20)虽然销量高但利润薄；过高的价格(>¥80)销量骤降。":"Mid-range products (¥20–80) account for 41% of offerings with the highest ratings (4.66). Low prices drive volume but sacrifice margin; premium pricing sees sharp sales decline.",
+       evidence:"Mid-range Stable cluster: 1,199 products, avg ¥45, rating 4.66."},
+      {title:zh?"积累评价比降价更有效":"Reviews Matter More Than Discounts",color:"bg-green-600",
+       detail:zh?"评论数与销量的相关系数高达 r=0.725，是销量最强的预测因子（占模型69.6%权重）。促销活动与销量的相关性几乎为零（r=-0.013）。与其降价促销，不如投入资源鼓励买家留评。":"Review count correlates with sales at r=0.725 — the single strongest predictor (69.6% model weight). Promotion status has near-zero correlation with sales (r=-0.013). Invest in reviews, not discounts.",
+       evidence:"RF feature importance: review_count=69.6%, is_promoted=0.9% (p=0.76, not significant)."},
+      {title:zh?"蔬菜类是销量之王":"Vegetables Are the Volume King",color:"bg-orange-500",
+       detail:zh?"蔬菜类均价仅¥18.82，但平均月销1,874件 — 是茶叶类的3.6倍。单价低但周转快、复购高。建议卖家优先布局蔬菜品类，以量取胜。":"Vegetables average ¥18.82 but sell 1,874 units/month — 3.6x more than Tea. Low unit price, high turnover, frequent repurchase. Prioritize vegetable SKUs for volume play.",
+       evidence:"Vegetables: 629 products, avg sales 1,874 — highest across all 5 categories."},
+      {title:zh?"瞄准\"中端稳定型\"定位":"Target 'Mid-range Stable' Segment",color:"bg-purple-600",
+       detail:zh?"最大聚类（41%产品）是\"中端稳定型\"：均价¥45、评分4.66。这是市场最主流的定位。新上架产品应参考此区间的价格和品质标准。":"The largest cluster (41%) is 'Mid-range Stable': ¥45 avg, 4.66 rating. This is the market sweet spot. New products should benchmark against this segment.",
+       evidence:"Mid-range Stable: 1,199 products (41%) across all categories."},
+      {title:zh?"茶叶适合高端利基策略":"Tea Suits a Premium Niche Strategy",color:"bg-red-500",
+       detail:zh?"茶叶均价¥103.25，是整体均价的2倍。销量较低（517件/月）但评分最高（4.46）且竞争较少。适合有品牌、有品质优势的卖家走差异化路线。":"Tea averages ¥103.25 — 2x the overall average. Lower volume but highest rating (4.46) with less competition. Ideal for branded, quality-focused sellers pursuing a premium strategy.",
+       evidence:"Tea: highest avg price (¥103) and rating (4.46). Premium Niche cluster (¥169 avg) led by tea."},
+      {title:zh?"警惕低评分陷阱":"Beware the Low-Rating Trap",color:"bg-gray-600",
+       detail:zh?"\"低参与度\"聚类（36%产品）评分仅3.94，是四个聚类中最低的。这些产品售价中等但口碑差，导致销量受限。提升产品质量和服务是摆脱低价竞争的关键。":"The 'Low Engagement' cluster (36% of products) has the lowest rating at 3.94. Moderate prices but poor reputation caps sales. Quality and service improvements are the path out.",
+       evidence:"Low Engagement: 1,038 products, rating 3.94 — lowest of all clusters."},
+    ];
+    return {lang,menuOpen,t,switchLanguage,nav,suggestions};
+  }
+}).mount("#app");
+</script>
+</body>
+</html>
