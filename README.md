@@ -46,7 +46,7 @@ Rather than presenting this as a student analysis exercise, AgriSight is framed 
 
 - **Primary:** JD.com agricultural product category pages (`生鲜`, `粮油`, `茶叶`, `水果`, `蔬菜`)
 - **Target volume:** 2,000+ raw records → 1,500+ after cleaning
-- **Key fields:** Product name, category, price, sales volume, review count, rating, origin, shipping location, store name, promotion status
+- **Key fields:** Product name, category, price, sales volume, review count, rating, origin, shipping location, store name, store level, promotion status
 
 ---
 

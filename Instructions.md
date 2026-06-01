@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS products (
   origin TEXT,
   shipping_location TEXT,
   store_name TEXT,
+  store_level TEXT,
   is_promoted INTEGER,
   product_url TEXT,
   price_tier TEXT,
@@ -198,6 +199,7 @@ def parse_item(item, category):
             "origin": None,
             "shipping_location": None,
             "store_name": None,
+            "store_level": None,
             "is_promoted": None,
             "product_url": None
         }
@@ -344,6 +346,14 @@ plt.clf()
 df["category"].value_counts().plot(kind="pie", autopct="%1.1f%%", title="类目占比")
 plt.savefig("analysis/charts/04_category_pie.png")
 plt.clf()
+# Chart 5: Average sales by price tier
+df.groupby("price_tier")["sales_volume"].mean().plot(
+    kind="bar", color=["green", "orange", "red"], title="各价格区间平均销量"
+)
+plt.ylabel("Average Sales Volume")
+plt.tight_layout()
+plt.savefig("analysis/charts/05_price_tier_vs_sales.png")
+plt.clf()
 ```
 
 ---
@@ -365,17 +375,17 @@ corr = df[features].corr()
 sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f")
 plt.title("相关性热力图")
 plt.tight_layout()
-plt.savefig("analysis/charts/05_correlation_heatmap.png")
+plt.savefig("analysis/charts/06_correlation_heatmap.png")
 plt.clf()
 
 # Chart 6: Rating vs sales scatter
 df.plot.scatter(x="rating", y="sales_volume", alpha=0.3, title="评分 vs 销量")
-plt.savefig("analysis/charts/06_rating_vs_sales.png")
+plt.savefig("analysis/charts/07_rating_vs_sales.png")
 plt.clf()
 
 # Chart 7: Reviews vs sales scatter
 df.plot.scatter(x="review_count", y="sales_volume", alpha=0.3, title="评论数 vs 销量")
-plt.savefig("analysis/charts/07_reviews_vs_sales.png")
+plt.savefig("analysis/charts/08_reviews_vs_sales.png")
 plt.clf()
 
 # Chart 8: Price vs sales scatter (color-coded by category)
@@ -386,7 +396,7 @@ plt.ylabel("Sales Volume")
 plt.legend(title="Category", fontsize=8)
 plt.title("价格 vs 销量 (按类目着色)")
 plt.tight_layout()
-plt.savefig("analysis/charts/08_price_vs_sales_by_category.png")
+plt.savefig("analysis/charts/09_price_vs_sales_by_category.png")
 plt.clf()
 ```
 
@@ -445,7 +455,7 @@ pd.Series(rf.feature_importances_, index=features).sort_values().plot(
     kind="barh", title="特征重要性"
 )
 plt.tight_layout()
-plt.savefig("analysis/charts/09_feature_importance.png")
+plt.savefig("analysis/charts/10_feature_importance.png")
 plt.clf()
 
 # Chart 10: Actual vs predicted sales
@@ -455,7 +465,7 @@ plt.xlabel("Actual Sales")
 plt.ylabel("Predicted Sales")
 plt.title("实际销量 vs 预测销量")
 plt.tight_layout()
-plt.savefig("analysis/charts/10_actual_vs_predicted.png")
+plt.savefig("analysis/charts/11_actual_vs_predicted.png")
 plt.clf()
 ```
 
@@ -492,7 +502,7 @@ plt.plot(range(2, 9), inertias, "o-")
 plt.title("Elbow Method")
 plt.xlabel("K")
 plt.ylabel("Inertia")
-plt.savefig("analysis/charts/11_elbow.png")
+plt.savefig("analysis/charts/12_elbow.png")
 plt.clf()
 
 # Fit with K=4
@@ -512,7 +522,7 @@ plt.xlabel("Price")
 plt.ylabel("Sales Volume")
 plt.legend()
 plt.title("产品聚类结果")
-plt.savefig("analysis/charts/12_cluster_scatter.png")
+plt.savefig("analysis/charts/13_cluster_scatter.png")
 plt.clf()
 
 # Chart: radar chart per cluster
@@ -534,7 +544,7 @@ ax.set_xticklabels(["Price", "Sales Vol", "Reviews", "Rating"])
 ax.set_title("各聚类特征雷达图")
 ax.legend(loc="upper right", bbox_to_anchor=(1.3, 1.1))
 plt.tight_layout()
-plt.savefig("analysis/charts/13_radar_per_cluster.png")
+plt.savefig("analysis/charts/14_radar_per_cluster.png")
 plt.clf()
 
 df.to_csv("data/cleaned/clustered_data.csv", index=False, encoding="utf-8-sig")
@@ -570,7 +580,7 @@ plt.bar(range(1, len(features)+1), pca.explained_variance_ratio_)
 plt.title("PCA Explained Variance")
 plt.xlabel("Component")
 plt.ylabel("Variance Ratio")
-plt.savefig("analysis/charts/14_pca_scree.png")
+plt.savefig("analysis/charts/15_pca_scree.png")
 plt.clf()
 
 # Use PC1 as competitiveness score (flip sign if needed so higher = better)
@@ -584,7 +594,7 @@ top20.set_index("product_name")["competitiveness_score"].plot(
     kind="barh", title="Top 20 竞争力产品"
 )
 plt.tight_layout()
-plt.savefig("analysis/charts/15_competitiveness_top20.png")
+plt.savefig("analysis/charts/16_competitiveness_top20.png")
 plt.clf()
 
 df.to_csv("data/cleaned/final_data.csv", index=False, encoding="utf-8-sig")

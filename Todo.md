@@ -44,6 +44,7 @@ All tasks organized by phase. Check off items as you complete them.
   - [ ] Origin / 产地
   - [ ] Shipping location
   - [ ] Store name
+  - [ ] Store level (if available)
   - [ ] Promotion status (is there a discount/coupon flag?)
   - [ ] Product URL
 - [ ] Save raw output to `data/raw/raw_YYYY-MM-DD.csv` after each run
@@ -82,6 +83,7 @@ All tasks organized by phase. Check off items as you complete them.
 - [ ] Plot: bar chart of average sales volume by category
 - [ ] Plot: price range distribution histogram (overall and per category)
 - [ ] Plot: pie chart of category proportions
+- [ ] Plot: bar chart of average sales by price tier (budget/mid/premium)
 - [ ] Plot: sales volume distribution histogram
 - [ ] Export all charts to `analysis/charts/` as PNG
 - [ ] Save summary stats to `data/cleaned/descriptive_summary.csv`
