@@ -100,16 +100,21 @@ All tasks organized by phase. Check off items as you complete them.
 
 ---
 
-## Phase 6 — Correlation Analysis
+## Phase 6 — Correlation Analysis ✅
 
-- [ ] Write `analysis/02_correlation.py`
-- [ ] Compute Pearson correlation matrix: price, sales_volume, review_count, rating, is_promoted
-- [ ] Plot: correlation heatmap (seaborn)
-- [ ] Plot: scatter plot — rating vs sales_volume
-- [ ] Plot: scatter plot — review_count vs sales_volume
-- [ ] Plot: scatter plot — price vs sales_volume (color-coded by category)
-- [ ] Interpret and note key findings (e.g. "review_count has r=0.72 with sales_volume")
-- [ ] Export charts to `analysis/charts/`
+- [x] Write `analysis/02_correlation.py`
+- [x] Compute Pearson correlation matrix: price, sales_volume, review_count, rating, is_promoted
+- [x] Plot: correlation heatmap → `06_correlation_heatmap.png`
+- [x] Plot: scatter — rating vs sales_volume → `07_rating_vs_sales.png`
+- [x] Plot: scatter — review_count vs sales_volume → `08_reviews_vs_sales.png`
+- [x] Plot: scatter — price vs sales_volume (color-coded by category) → `09_price_vs_sales_by_category.png`
+- [x] Export charts to `analysis/charts/`
+
+**Key findings:**
+- review_count → sales: **r = +0.725** (strong positive — more reviews = higher sales)
+- price → sales: **r = −0.261** (moderate negative — cheaper products sell more)
+- rating → sales: **r = −0.101** (weak — rating alone doesn't predict sales)
+- is_promoted → sales: **r = −0.013** (negligible linear effect)
 
 ---
 
