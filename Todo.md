@@ -56,30 +56,26 @@ All tasks organized by phase. Check off items as you complete them.
 
 ---
 
-## Phase 4 — Data Cleaning
+## Phase 4 — Data Cleaning ✅
 
-- [ ] Load raw CSV into pandas
-- [ ] Document raw row count before cleaning
-- [ ] Handle missing values:
-  - [ ] Drop rows missing product name, category, or price
-  - [ ] Drop rows where sales volume could not be parsed at all
-  - [ ] Fill missing ratings with category median
-  - [ ] Flag missing origin as "未知"
-  - [ ] Fill missing review_count with 0 (no reviews ≠ missing data)
-- [ ] Remove exact duplicate rows (same product_name + store_name)
-- [ ] Parse and standardize price field → single numeric `price` column (take min of range)
-- [ ] Parse sales volume → numeric `sales_volume` (convert "1万+" → 10000, "358笔" → 358)
-- [ ] Standardize category labels (strip whitespace, normalize any label variations)
-- [ ] Standardize promotion field → binary `is_promoted` (0/1)
-- [ ] Handle outliers: cap `sales_volume` and `price` at 99th percentile
-- [ ] Add category English mapping → `category_en` column:
-  - 水果 → Fruits, 蔬菜 → Vegetables, 粮油/粮油调味 → Grains & Oils, 茶叶 → Tea, 生鲜/生鲜肉禽 → Fresh Produce
-- [ ] Add derived columns:
-  - [ ] `price_tier`: budget (bottom 33%) / mid (middle 33%) / premium (top 33%) per category
-  - [ ] `review_density`: review_count / sales_volume (proxy for buyer engagement rate)
-- [ ] Save cleaned data to `data/cleaned/cleaned_data.csv`
-- [ ] Document before/after row counts and all cleaning decisions
-- [ ] Import cleaned data into SQLite `products` table (run `db/init_db.py`)
+- [x] Load raw CSV into pandas (3,000 records)
+- [x] Document raw row count before cleaning
+- [x] Handle missing values:
+  - [x] Drop rows missing product name, category, or price (0 dropped — all complete)
+  - [x] Fill missing ratings with category median
+  - [x] Flag missing origin as "未知"
+  - [x] Fill missing review_count with 0
+- [x] Remove exact duplicate rows → 79 duplicates removed
+- [x] Parse and standardize price field → numeric (handles both string and float)
+- [x] Parse sales volume → numeric (handles "万", "件", and int formats)
+- [x] Standardize category labels (strip whitespace)
+- [x] Standardize promotion field → binary `is_promoted` (0/1)
+- [x] Handle outliers: cap `sales_volume` (99th: 5,173) and `price` (99th: ¥285)
+- [x] Add category English mapping → `category_en` column
+- [x] Add derived columns: `price_tier` (budget/mid/premium), `review_density`
+- [x] Save cleaned data → `data/cleaned/cleaned_data.csv` (2,921 records)
+- [x] Document before/after: 3,000 → 2,921 (79 removed, 2.6%)
+- [x] Import cleaned data into SQLite `products` table
 
 ---
 
