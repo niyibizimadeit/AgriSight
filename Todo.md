@@ -184,24 +184,26 @@ All tasks organized by phase. Check off items as you complete them.
 
 ---
 
-## Phase 10 — Backend API (FastAPI)
+## Phase 10 — Backend API (FastAPI) ✅
 
-- [ ] Write `backend/main.py` — initialize FastAPI app
-- [ ] Create DB connection utility (`backend/db.py`) using `sqlite3`
-- [ ] Implement routes:
-  - [ ] `GET /api/overview` — KPI summary stats
-  - [ ] `GET /api/products` — paginated product list with filters (category, price range, origin)
-  - [ ] `GET /api/analysis/sales-by-category` — chart data
-  - [ ] `GET /api/analysis/correlation` — heatmap matrix data
-  - [ ] `GET /api/analysis/regression` — regression coefficients + model metrics
-  - [ ] `GET /api/analysis/clusters` — cluster labels + summary per cluster
-  - [ ] `GET /api/analysis/pca` — competitiveness score leaderboard
-  - [ ] `GET /api/analysis/promotion-impact` — promoted vs non-promoted comparison
-  - [ ] `POST /api/predict` — accept price, category, rating, reviews, promotion → return predicted sales range
-- [ ] Load `rf_model.pkl` on startup for prediction endpoint
-- [ ] Add CORS middleware
-- [ ] Test all endpoints with `curl` or Postman
-- [ ] Confirm `/api/predict` returns sensible predictions
+- [x] Write `backend/main.py` — FastAPI app, CORS, route registration
+- [x] Create `backend/db.py` — SQLite connection utility (query, query_one)
+- [x] Implement routes:
+  - [x] `GET /api/overview` → 2,921 products, ¥56.17 avg, 4.32 rating, 35% promo
+  - [x] `GET /api/products` → paginated (50/page), filterable by category/price/origin
+  - [x] `GET /api/analysis/sales-by-category` → Vegetables 1,874, Fruits 1,053...
+  - [x] `GET /api/analysis/correlation` → full Pearson matrix as JSON
+  - [x] `GET /api/analysis/regression` → feature importance + OLS/RF metrics
+  - [x] `GET /api/analysis/clusters` → 4 segments with avg stats
+  - [x] `GET /api/analysis/pca` → top-N leaderboard by competitiveness
+  - [x] `GET /api/analysis/promotion-impact` → promoted vs non-promoted comparison
+  - [x] `POST /api/predict` → RF prediction, returns sales + range + confidence
+- [x] Load `rf_model.pkl` + `label_encoder.pkl` (lazy-load on first predict)
+- [x] Add CORS middleware (allow all origins)
+- [x] Test all 9 endpoints — all return correct data
+- [x] Confirm `/api/predict`: ¥35 fruit → 1,135 units (908–1,362 range, moderate confidence)
+
+**Run:** `uvicorn backend.main:app --reload --port 8000` from project root
 
 ---
 

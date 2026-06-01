@@ -199,7 +199,22 @@ for cat in df["category"].unique():
 # ---------------------------------------------------------------------------
 DB_PATH = os.getenv("DB_PATH", "data/agrisight.db")
 conn = sqlite3.connect(DB_PATH)
-df.to_sql("products", conn, if_exists="replace", index=False)
+
+# Drop old table and recreate with proper schema (including id, cluster_label, competitiveness_score)
+conn.execute("DROP TABLE IF EXISTS products")
+conn.execute("""
+    CREATE TABLE products (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_name TEXT, category TEXT, category_en TEXT,
+        price REAL, sales_volume INTEGER, review_count INTEGER,
+        rating REAL, origin TEXT, shipping_location TEXT,
+        store_name TEXT, store_level TEXT, is_promoted INTEGER,
+        product_url TEXT, sku_id TEXT, price_tier TEXT,
+        cluster_label TEXT, competitiveness_score REAL,
+        review_density REAL
+    )
+""")
+df.to_sql("products", conn, if_exists="append", index=False)
 conn.commit()
 conn.close()
 print(f"\n  Imported {clean_count} records into SQLite → {DB_PATH}")
