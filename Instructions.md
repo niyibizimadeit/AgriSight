@@ -808,95 +808,175 @@ Test: `http://localhost:8000/docs` (FastAPI auto-generates Swagger UI)
 
 ## Phase 11 — Frontend Development
 
-### 11.1 Language Toggle (Bilingual Support)
+> **Framework: Vue 3 (CDN)** — no build step, drop-in `<script>` tag. Each page is a standalone Vue app. ECharts and Tailwind CSS loaded via CDN.
 
-All chart scripts and the web system support Chinese (`zh`) and English (`en`). In the frontend, add a language switcher that toggles chart labels:
+### 11.1 Base HTML template
+
+Every page includes Vue 3, ECharts, and Tailwind CSS from CDN:
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgriSight — {{ pageTitle }}</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+  <div id="app">
+    <!-- Page content here -->
+  </div>
+  <script>
+    const { createApp, ref, reactive, onMounted, watch, computed } = Vue;
+    createApp({
+      setup() {
+        // Component logic here
+        return {};
+      }
+    }).mount("#app");
+  </script>
+</body>
+</html>
+```
+
+### 11.2 Language Toggle (Bilingual Support)
+
+All charts and UI support Chinese (`zh`) and English (`en`). Each page uses a reactive `lang` ref:
 
 ```javascript
-// Language toggle — stored in localStorage, defaults to "zh"
-let lang = localStorage.getItem("agrisight_lang") || "zh";
+const lang = ref(localStorage.getItem("agrisight_lang") || "zh");
 
 const LABELS = {
-  zh: { overview: "数据概览", products: "商品列表", predict: "销量预测", /* ... */ },
-  en: { overview: "Data Overview", products: "Product List", predict: "Sales Prediction", /* ... */ },
+  zh: { overview: "数据概览", products: "商品列表", predict: "销量预测" },
+  en: { overview: "Data Overview", products: "Product List", predict: "Sales Prediction" },
 };
 
-function t(key) { return LABELS[lang][key] || key; }
+function t(key) { return LABELS[lang.value]?.[key] || key; }
 
 function switchLanguage(l) {
-  lang = l;
+  lang.value = l;
   localStorage.setItem("agrisight_lang", l);
-  location.reload();  // or re-render charts in-place
+  // Charts re-render reactively via watchers
 }
 ```
 
-When fetching data from the backend, pass `?lang=en` to get English category names (`category_en` column).
+### 11.3 ECharts + Vue pattern
 
-### 11.2 ECharts integration
-
-Include ECharts via CDN in every HTML page:
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
-```
-
-For the China map (origin heatmap), also include:
-```html
-<script src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
-```
-
-### 11.3 Fetching API data
-
-Standard pattern for all chart pages:
+Use `ref` for the chart container DOM element, `onMounted` to initialise:
 
 ```javascript
-async function loadChart() {
-  const res = await fetch("http://localhost:8000/api/analysis/sales-by-category");
-  const data = await res.json();
-  const chart = echarts.init(document.getElementById("chart-container"));
-  chart.setOption({
-    title: { text: "各类目平均销量" },
-    xAxis: { type: "category", data: data.categories },
-    yAxis: { type: "value" },
-    series: [{ type: "bar", data: data.values }]
+setup() {
+  const chartContainer = ref(null);
+  let chartInstance = null;
+
+  onMounted(() => {
+    chartInstance = echarts.init(chartContainer.value);
+    fetchChartData();
   });
+
+  async function fetchChartData() {
+    const res = await fetch("http://localhost:8000/api/analysis/sales-by-category");
+    const data = await res.json();
+    chartInstance.setOption({
+      title: { text: t("avgSalesCat") },
+      xAxis: { type: "category", data: data.categories },
+      yAxis: { type: "value" },
+      series: [{ type: "bar", data: data.values }],
+    });
+  }
+
+  // Resize on window change
+  window.addEventListener("resize", () => chartInstance?.resize());
+
+  return { chartContainer };
 }
-loadChart();
 ```
 
-### 11.4 Prediction widget
+```html
+<div ref="chartContainer" style="width:100%;height:400px;"></div>
+```
+
+### 11.4 Prediction Widget (Vue)
+
+Reactive form with two-way binding via `v-model`:
 
 ```html
-<input id="price" type="number" placeholder="Price (¥)" />
-<input id="rating" type="number" step="0.1" placeholder="Rating (1-5)" />
-<input id="reviews" type="number" placeholder="Review count" />
-<select id="category">
-  <option>水果</option><option>蔬菜</option><option>粮油</option>
-  <option>茶叶</option><option>生鲜</option>
-</select>
-<label><input type="checkbox" id="promoted"> On Promotion</label>
-<button onclick="predict()">Predict Sales</button>
-<div id="result"></div>
+<div id="predict-app" class="max-w-lg mx-auto p-6 bg-white rounded-xl shadow">
+  <h2 class="text-xl font-bold mb-4">{{ t("predict") }}</h2>
 
-<script>
-async function predict() {
-  const body = {
-    price: parseFloat(document.getElementById("price").value),
-    rating: parseFloat(document.getElementById("rating").value),
-    review_count: parseInt(document.getElementById("reviews").value),
-    is_promoted: document.getElementById("promoted").checked ? 1 : 0,
-    category: document.getElementById("category").value
-  };
-  const res = await fetch("http://localhost:8000/api/predict", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  });
-  const data = await res.json();
-  document.getElementById("result").innerHTML =
-    `Predicted: <b>${data.predicted_sales}</b> units/month (range: ${data.range_low}–${data.range_high})`;
-}
-</script>
+  <label class="block mb-1 text-sm">Price (¥)</label>
+  <input v-model.number="price" type="number" class="w-full border rounded px-3 py-2 mb-3" />
+
+  <label class="block mb-1 text-sm">Rating (1–5)</label>
+  <input v-model.number="rating" type="number" step="0.1" min="1" max="5"
+         class="w-full border rounded px-3 py-2 mb-3" />
+
+  <label class="block mb-1 text-sm">Review Count</label>
+  <input v-model.number="reviewCount" type="number"
+         class="w-full border rounded px-3 py-2 mb-3" />
+
+  <label class="block mb-1 text-sm">Category</label>
+  <select v-model="category" class="w-full border rounded px-3 py-2 mb-3">
+    <option v-for="c in categories" :value="c">{{ c }}</option>
+  </select>
+
+  <label class="flex items-center gap-2 mb-4">
+    <input v-model="isPromoted" type="checkbox" /> On Promotion
+  </label>
+
+  <button @click="predict" :disabled="loading"
+          class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+    {{ loading ? "Predicting..." : "Predict Sales" }}
+  </button>
+
+  <div v-if="result" class="mt-4 p-4 bg-green-50 rounded text-center">
+    Predicted: <b>{{ result.predicted_sales }}</b> units/month
+    <br /><small>Range: {{ result.range_low }} – {{ result.range_high }}</small>
+  </div>
+</div>
+```
+
+```javascript
+const { createApp, ref } = Vue;
+createApp({
+  setup() {
+    const price = ref(null);
+    const rating = ref(4.0);
+    const reviewCount = ref(0);
+    const category = ref("水果");
+    const isPromoted = ref(false);
+    const loading = ref(false);
+    const result = ref(null);
+    const categories = ["水果", "蔬菜", "粮油", "茶叶", "生鲜"];
+
+    async function predict() {
+      loading.value = true;
+      result.value = null;
+      try {
+        const res = await fetch("http://localhost:8000/api/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            price: price.value,
+            rating: rating.value,
+            review_count: reviewCount.value,
+            is_promoted: isPromoted.value ? 1 : 0,
+            category: category.value,
+          }),
+        });
+        result.value = await res.json();
+      } finally {
+        loading.value = false;
+      }
+    }
+
+    return { price, rating, reviewCount, category, isPromoted,
+             loading, result, categories, predict };
+  }
+}).mount("#predict-app");
 ```
 
 ---

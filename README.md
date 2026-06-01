@@ -36,7 +36,7 @@ Rather than presenting this as a student analysis exercise, AgriSight is framed 
 | Statistical Analysis | `scipy`, `statsmodels` |
 | Machine Learning | `scikit-learn` (KMeans, RandomForest, PCA, LinearRegression) |
 | Backend API | `FastAPI` |
-| Frontend | HTML5 + ECharts + Tailwind CSS |
+| Frontend | Vue 3 (CDN) + ECharts + Tailwind CSS |
 | Database | SQLite (zero-config, portable) |
 | Environment | Python 3.13+, virtual environment |
 
@@ -104,8 +104,8 @@ agrisight/
 │   ├── routes/
 │   └── models/
 ├── frontend/
-│   ├── index.html
-│   ├── pages/
+│   ├── index.html              # Vue 3 homepage
+│   ├── pages/                  # Standalone Vue 3 apps per page
 │   └── static/
 ├── db/
 │   ├── schema.sql             # Reference DDL

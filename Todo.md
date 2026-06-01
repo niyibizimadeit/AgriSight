@@ -189,19 +189,22 @@ All tasks organized by phase. Check off items as you complete them.
 
 ## Phase 11 — Frontend Development
 
-- [ ] Create `frontend/index.html` — homepage with ECharts KPI cards
-- [ ] Create `frontend/pages/products.html` — filterable product data table
+> **Framework: Vue 3 via CDN** — each `.html` page is a standalone Vue app. No build step required.
+
+- [ ] Create `frontend/index.html` — homepage with ECharts KPI cards (Vue 3 app)
+- [ ] Create `frontend/pages/products.html` — filterable product data table (Vue reactive)
 - [ ] Create `frontend/pages/sales-analysis.html` — sales feature charts
 - [ ] Create `frontend/pages/influence-factors.html` — correlation heatmap + regression charts
 - [ ] Create `frontend/pages/clustering.html` — cluster scatter + radar charts
 - [ ] Create `frontend/pages/pca.html` — competitiveness leaderboard
-- [ ] Create `frontend/pages/prediction.html` — interactive prediction widget form
+- [ ] Create `frontend/pages/prediction.html` — interactive prediction widget (Vue v-model)
 - [ ] Create `frontend/pages/origin-map.html` — China choropleth origin heatmap (ECharts geo)
 - [ ] Create `frontend/pages/promotion.html` — promotion impact comparison
 - [ ] Create `frontend/pages/suggestions.html` — data-backed seller recommendations
-- [ ] Wire all pages to FastAPI endpoints via `fetch()`
-- [ ] Add shared navigation bar across all pages
+- [ ] Wire all pages to FastAPI endpoints via `fetch()` in Vue setup
+- [ ] Add shared navigation bar component (Vue template partial or copy across pages)
 - [ ] Style with Tailwind CSS (CDN) — clean, professional dashboard aesthetic
+- [ ] Add bilingual `lang` toggle (zh/en) with `localStorage` persistence
 - [ ] Test all pages render charts correctly with live API data
 
 ---
