@@ -103,30 +103,51 @@ python db/init_db.py
 
 ## Phase 2 — Scraping Strategy & Target Selection
 
-### 2.1 Target URLs (JD.com)
+### 2.1 Target URLs (Suning 苏宁易购)
 
-Use JD.com search pages for each category. Example base URLs:
+Use Suning's AJAX search endpoint for each category. Suning serves product data as HTML fragments — names, SKUs, and store info are in static HTML; prices require visiting individual product detail pages.
 
 ```
-https://search.jd.com/Search?keyword=新鲜水果&page=1
-https://search.jd.com/Search?keyword=新鲜蔬菜&page=1
-https://search.jd.com/Search?keyword=粮油调味&page=1
-https://search.jd.com/Search?keyword=茶叶&page=1
-https://search.jd.com/Search?keyword=生鲜肉禽&page=1
+https://search.suning.com/emall/searchV1Product.do?keyword=新鲜水果&pg=01&cp=0
+https://search.suning.com/emall/searchV1Product.do?keyword=新鲜蔬菜&pg=01&cp=0
+https://search.suning.com/emall/searchV1Product.do?keyword=粮油调味&pg=01&cp=0
+https://search.suning.com/emall/searchV1Product.do?keyword=茶叶&pg=01&cp=0
+https://search.suning.com/emall/searchV1Product.do?keyword=生鲜肉禽&pg=01&cp=0
 ```
 
-Collect at least 400 records per category to reach 2,000 raw records (expect ~1,500+ after cleaning).
+Collect at least 600 records per category to reach 3,000+ raw records (expect ~2,500+ after cleaning).
 
 ### 2.2 Inspect the page structure
 
-Open any JD search result in Chrome DevTools → Elements tab. Product cards are typically inside:
+Open a Suning search page in Chrome DevTools → Network tab → look for the XHR request to `searchV1Product.do`. The response is an HTML fragment with product cards:
+
 ```html
-<ul id="J_goodsList">
-  <li data-sku="..."> ... </li>
-</ul>
+<li class="item-wrap 0000000000-SKU basic" hasprice="false">
+  <div class="product-box">
+    <div class="res-img">
+      <div class="img-block">
+        <a class="sellPoint" href="//product.suning.com/.../SKU.html">
+          <img alt="Product Name" />
+        </a>
+      </div>
+    </div>
+    <div class="res-info">
+      <div class="title-selling-point">
+        <a href="//product.suning.com/.../SKU.html">Product Name</a>
+      </div>
+      <div class="price-box">
+        <span class="def-price" datasku="SKU||zl|||VENDOR||"></span>
+      </div>
+    </div>
+  </div>
+</li>
 ```
 
-Each `<li>` contains: title (`.p-name`), price (`.p-price`), reviews (`.p-commit`). Sales volume may require loading the individual product page or is shown as "月销XX件".
+Key selectors:
+- Product name: `div.title-selling-point a`
+- SKU: `span.def-price` → `datasku` attribute (first `|`-separated segment)
+- Product URL: `a[href*='product.suning.com']`
+- **Prices are JS-loaded** — the `<span class="def-price">` is empty in HTML; visit the product detail page to extract price, reviews, rating, and origin.
 
 ### 2.3 Rate limiting
 
@@ -141,7 +162,7 @@ time.sleep(random.uniform(1.5, 3.5))
 
 ## Phase 3 — Scraper Development
 
-### 3.1 jd_scraper.py skeleton
+### 3.1 suning_scraper.py skeleton
 
 ```python
 import requests
@@ -218,7 +239,7 @@ if __name__ == "__main__":
     print(f"Total: {len(df)} records saved.")
 ```
 
-> **Note:** If JD blocks requests-based scraping, switch to Selenium with `webdriver.Chrome()` and use `driver.get(url)` + `driver.page_source` instead of `requests.get()`.
+> **Note:** Suning search pages are accessible via `requests`. If blocked, add longer delays or rotate User-Agent strings. Selenium (`webdriver.Chrome()`) is a fallback for JS-heavy pages.
 
 ---
 

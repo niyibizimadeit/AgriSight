@@ -1,10 +1,12 @@
 # ✅ AgriSight — TODO
+> **Data source: Suning (苏宁易购)** — JD.com is JS-rendered + blocked, 1688 requires login. Suning serves product names/SKUs/stores in static HTML; prices from detail pages.
+> **Target: 3,000+ raw records** (~600 per category, ~2,500+ after cleaning).
 
 All tasks organized by phase. Check off items as you complete them.
 
 ---
 
-## Phase 1 — Project Setup & Environment
+## Phase 1 — Project Setup & Environment ✅
 
 - [x] Create project root directory `agrisight/`
 - [x] Set up Python virtual environment (`python -m venv venv`)
@@ -18,39 +20,49 @@ All tasks organized by phase. Check off items as you complete them.
 
 ---
 
-## Phase 2 — Scraping Strategy & Target Selection (Current)
+## Phase 2 — Scraping Strategy & Target Selection ✅
 
-- [ ] Choose primary target platform (JD.com recommended — more accessible than Taobao)
-- [ ] Identify target category URLs for: 水果 (fruits), 蔬菜 (vegetables), 粮油 (grains & oils), 茶叶 (tea), 生鲜 (fresh produce)
-- [ ] Inspect page structure (DevTools → Network tab) to identify data-carrying elements
-- [ ] Decide on scraping method: `requests + BS4` for static pages, `Selenium` for JS-rendered pages
-- [ ] Configure request headers (User-Agent rotation, cookies if needed)
-- [ ] Set up polite rate limiting (1–3 second delays between requests)
-- [ ] Write a test scrape of 20 records to validate field extraction
+> **Platform: Suning (苏宁易购)** — tested and working. Product names, SKU IDs, store names in static HTML. Prices loaded via JS (empty spans) — must visit detail pages.
+
+- [x] Confirm target platform → **Suning (苏宁易购)** — JD.com blocks, 1688 requires login, Suning works
+- [x] Identify target category search URLs (AJAX endpoint):
+  - `https://search.suning.com/emall/searchV1Product.do?keyword=新鲜水果&pg=01&cp=0`
+  - Same pattern for: 新鲜蔬菜, 粮油调味, 茶叶, 生鲜肉禽
+- [x] Inspect page structure — product cards:
+  - Container: `li.item-wrap` (~30 per page)
+  - Product name: `div.title-selling-point a`
+  - SKU ID: `span.def-price[datasku]` (parse first segment before `|`)
+  - Product URL: `a[href*='product.suning.com']`
+  - Store: mostly "苏宁自营" on search cards
+  - **Prices are JS-rendered** — empty `<span>` in HTML, must fetch detail pages
+- [x] Decide scraping method: `requests + BS4` for search pages; detail pages for price, reviews, origin
+- [x] Configure request headers (User-Agent, Accept-Language, Referer)
+- [x] Set up polite rate limiting: `time.sleep(random.uniform(2.0, 4.0))` between requests
+- [x] Write test scrape → `scraper/test_scrape.py`: 30 products extracted, detail enrichment works (price, origin)
 
 ---
 
 ## Phase 3 — Scraper Development
 
-- [ ] Write `jd_scraper.py` main scraper class
-- [ ] Implement pagination logic (loop through page 1–N per category)
-- [ ] Extract all required fields per product:
-  - [ ] Product name
-  - [ ] Category
-  - [ ] Price (handle ranges like "¥12–¥45")
-  - [ ] Sales volume (handle "1万+" format)
-  - [ ] Review count
-  - [ ] Rating (if available)
-  - [ ] Origin / 产地
-  - [ ] Shipping location
-  - [ ] Store name
-  - [ ] Store level (if available)
-  - [ ] Promotion status (is there a discount/coupon flag?)
-  - [ ] Product URL
+- [ ] Write `scraper/suning_scraper.py` main scraper class
+- [ ] Implement pagination logic — loop page 1–N per category until results empty or max reached
+- [ ] Extract all required fields per product listing:
+  - [ ] Product name / offer title
+  - [ ] Category (assigned from search keyword)
+  - [ ] Price (handle ranges like "¥12.00–¥45.00"; take min price as `price`)
+  - [ ] Sales / transaction volume (`成交量` — parse "1万笔" → 10000, "358笔" → 358)
+  - [ ] Review count (if available; detail page may show "评价数" or similar)
+  - [ ] Rating (if available; may be on detail page or as store DSR score)
+  - [ ] Origin / 产地 (tag on listing card, e.g. "山东", "云南")
+  - [ ] Shipping location (发货地)
+  - [ ] Store name (供应商/店铺名称)
+  - [ ] Store level / type (e.g. 实力商家, 金品诚企, years in business)
+  - [ ] Promotion status (is there a 特价, 促销, or discount badge? → binary 0/1)
+  - [ ] Product URL (full offer URL)
 - [ ] Save raw output to `data/raw/raw_YYYY-MM-DD.csv` after each run
-- [ ] Log errors and skipped records to `scraper.log`
-- [ ] Run full scrape targeting 2,000+ records
-- [ ] Verify raw CSV column completeness and row count
+- [ ] Log errors and skipped records to `scraper/scraper.log`
+- [ ] Run full scrape targeting 3,000+ records (≥600 per category)
+- [ ] Verify raw CSV: check column completeness and total row count
 
 ---
 
@@ -59,18 +71,22 @@ All tasks organized by phase. Check off items as you complete them.
 - [ ] Load raw CSV into pandas
 - [ ] Document raw row count before cleaning
 - [ ] Handle missing values:
-  - [ ] Drop rows missing product name, category, price, or sales volume
+  - [ ] Drop rows missing product name, category, or price
+  - [ ] Drop rows where sales volume could not be parsed at all
   - [ ] Fill missing ratings with category median
   - [ ] Flag missing origin as "未知"
-- [ ] Remove exact duplicate rows
-- [ ] Parse and standardize price field → single numeric `price` column
-- [ ] Parse sales volume → numeric `sales_volume` (convert "1万+" → 10000)
-- [ ] Standardize category labels (normalize variations, strip whitespace)
+  - [ ] Fill missing review_count with 0 (no reviews ≠ missing data)
+- [ ] Remove exact duplicate rows (same product_name + store_name)
+- [ ] Parse and standardize price field → single numeric `price` column (take min of range)
+- [ ] Parse sales volume → numeric `sales_volume` (convert "1万+" → 10000, "358笔" → 358)
+- [ ] Standardize category labels (strip whitespace, normalize any label variations)
 - [ ] Standardize promotion field → binary `is_promoted` (0/1)
-- [ ] Handle outliers: cap sales_volume and price at 99th percentile
-- [ ] Add derived columns: `price_tier` (budget/mid/premium), `review_density` (reviews/sales)
+- [ ] Handle outliers: cap `sales_volume` and `price` at 99th percentile
+- [ ] Add derived columns:
+  - [ ] `price_tier`: budget (bottom 33%) / mid (middle 33%) / premium (top 33%) per category
+  - [ ] `review_density`: review_count / sales_volume (proxy for buyer engagement rate)
 - [ ] Save cleaned data to `data/cleaned/cleaned_data.csv`
-- [ ] Document before/after row counts and cleaning decisions
+- [ ] Document before/after row counts and all cleaning decisions
 - [ ] Import cleaned data into SQLite `products` table (run `db/init_db.py`)
 
 ---
@@ -94,7 +110,7 @@ All tasks organized by phase. Check off items as you complete them.
 
 - [ ] Write `analysis/02_correlation.py`
 - [ ] Compute Pearson correlation matrix: price, sales_volume, review_count, rating, is_promoted
-- [ ] Plot: correlation heatmap (seaborn or matplotlib)
+- [ ] Plot: correlation heatmap (seaborn)
 - [ ] Plot: scatter plot — rating vs sales_volume
 - [ ] Plot: scatter plot — review_count vs sales_volume
 - [ ] Plot: scatter plot — price vs sales_volume (color-coded by category)
@@ -115,7 +131,7 @@ All tasks organized by phase. Check off items as you complete them.
 - [ ] Evaluate both models: MAE, RMSE, R² on test set
 - [ ] Plot: regression coefficient bar chart (feature importance)
 - [ ] Plot: actual vs predicted scatter plot
-- [ ] Save trained RandomForest model to `backend/models/rf_model.pkl` (for prediction API)
+- [ ] Save trained RandomForest model to `backend/models/rf_model.pkl`
 - [ ] Export charts to `analysis/charts/`
 
 ---
@@ -154,7 +170,7 @@ All tasks organized by phase. Check off items as you complete them.
 ## Phase 10 — Backend API (FastAPI)
 
 - [ ] Write `backend/main.py` — initialize FastAPI app
-- [ ] Create DB connection utility (`backend/db.py`) using `sqlite3` with helper functions
+- [ ] Create DB connection utility (`backend/db.py`) using `sqlite3`
 - [ ] Implement routes:
   - [ ] `GET /api/overview` — KPI summary stats
   - [ ] `GET /api/products` — paginated product list with filters (category, price range, origin)
@@ -206,7 +222,7 @@ All tasks organized by phase. Check off items as you complete them.
 
 ## Phase 13 — Report Writing
 
-- [ ] Write report introduction: project background, objectives, data source
+- [ ] Write report introduction: project background, objectives, data source (explain why Suning was chosen)
 - [ ] Document scraping methodology and tools used
 - [ ] Document data cleaning steps with before/after stats
 - [ ] Write descriptive analysis section with chart references
@@ -225,7 +241,7 @@ All tasks organized by phase. Check off items as you complete them.
 
 - [ ] Slide 1: Project title, name, topic number
 - [ ] Slide 2: Problem statement & business framing
-- [ ] Slide 3: Data source & scraping approach
+- [ ] Slide 3: Data source & scraping approach (Suning — justify the choice)
 - [ ] Slide 4: Data cleaning summary (before/after table)
 - [ ] Slide 5: Descriptive analysis highlights
 - [ ] Slide 6: Correlation findings
@@ -235,7 +251,7 @@ All tasks organized by phase. Check off items as you complete them.
 - [ ] Slide 10: Prediction widget demo screenshot
 - [ ] Slide 11: Key conclusions & seller suggestions
 - [ ] Slide 12: System demo screenshots
-- [ ] Prepare verbal answers: data source, field meanings, cleaning steps, analysis methods, chart interpretation, system demo, LLM usage
+- [ ] Prepare verbal answers: data source (why Suning), field meanings, cleaning steps, analysis methods, chart interpretation, system demo, LLM usage
 
 ---
 

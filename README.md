@@ -6,7 +6,7 @@
 
 ## Project Overview
 
-AgriSight is a data-driven web application that collects, cleans, analyzes, and visualizes agricultural product sales data from public e-commerce platforms (JD.com / Taobao). It is designed as both a **graduation project deliverable** (data analysis training — Topic 3, medium difficulty) and a **realistic B2B market intelligence tool** for agricultural sellers who want to understand pricing dynamics, competition, and demand patterns.
+AgriSight is a data-driven web application that collects, cleans, analyzes, and visualizes agricultural product sales data from public e-commerce platforms (Suning 苏宁易购). It is designed as both a **graduation project deliverable** (data analysis training — Topic 3, medium difficulty) and a **realistic B2B market intelligence tool** for agricultural sellers who want to understand pricing dynamics, competition, and demand patterns.
 
 The system answers questions like:
 - Which product categories sell the most, and at what price points?
@@ -44,8 +44,8 @@ Rather than presenting this as a student analysis exercise, AgriSight is framed 
 
 ## Data Source
 
-- **Primary:** JD.com agricultural product category pages (`生鲜`, `粮油`, `茶叶`, `水果`, `蔬菜`)
-- **Target volume:** 2,000+ raw records → 1,500+ after cleaning
+- **Primary:** Suning (苏宁易购) agricultural product search pages (5 categories: 水果, 蔬菜, 粮油调味, 茶叶, 生鲜肉禽)
+- **Target volume:** 3,000+ raw records → 2,500+ after cleaning
 - **Key fields:** Product name, category, price, sales volume, review count, rating, origin, shipping location, store name, store level, promotion status
 
 ---
@@ -87,7 +87,7 @@ Rather than presenting this as a student analysis exercise, AgriSight is framed 
 ```
 agrisight/
 ├── scraper/
-│   └── jd_scraper.py          # Main scraping script
+│   └── suning_scraper.py      # Main scraping script
 ├── data/
 │   ├── raw/                   # Raw scraped CSV files
 │   └── cleaned/               # Cleaned and processed data
@@ -122,7 +122,7 @@ agrisight/
 
 | Requirement | Status |
 |---|---|
-| ≥ 1,500 data records | Targeting 2,000 raw / 1,500 clean |
+| ≥ 1,500 data records | Targeting 3,000 raw / 2,500 clean |
 | ≥ 4 analysis methods | Descriptive, Correlation, Regression, Clustering, PCA (5 total) |
 | Web system with all required modules | ✅ All 7 required + 3 bonus modules |
 | ≥ 9 required charts | ✅ 9 required + origin heatmap + radar charts |
