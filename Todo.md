@@ -163,18 +163,24 @@ All tasks organized by phase. Check off items as you complete them.
 
 ---
 
-## Phase 9 — PCA & Competitiveness Score
+## Phase 9 — PCA & Competitiveness Score ✅
 
-- [ ] Write `analysis/05_pca.py`
-- [ ] Select PCA input features: price, sales_volume, review_count, rating, is_promoted
-- [ ] Normalize with `StandardScaler`
-- [ ] Fit PCA, extract explained variance ratio
-- [ ] Plot: scree plot (explained variance per component)
-- [ ] Use PC1 (or weighted combination) as `competitiveness_score`
-- [ ] Add `competitiveness_score` to cleaned dataset
-- [ ] Rank top 20 products by competitiveness score
-- [ ] Plot: horizontal bar chart of top 20 competitive products
-- [ ] Export charts to `analysis/charts/`
+- [x] Write `analysis/05_pca.py` (5-feature PCA)
+- [x] Select features: price, sales_volume, review_count, rating, is_promoted
+- [x] Normalize with `StandardScaler`
+- [x] Fit PCA — PC1: 36.7%, PC1+PC2: 57.2%, 4 PCs → 94.8%
+- [x] Plot: scree plot → `15_pca_scree.png`
+- [x] Use PC1 as `competitiveness_score` (normalized 0–100, correlates r=0.92 with sales)
+- [x] Add score to `data/cleaned/final_data.csv`
+- [x] Rank top 20 → `16_competitiveness_top20.png`
+- [x] Export charts to `analysis/charts/`
+
+**PC1 loadings (what drives competitiveness):**
+- sales_volume: **+0.677** (strongest positive driver)
+- review_count: **+0.644** (social proof matters)
+- price: **−0.320** (lower price = more competitive)
+- rating: −0.152 (weak effect)
+- is_promoted: −0.026 (negligible)
 
 ---
 
