@@ -112,8 +112,9 @@ agrisight/
 │   ├── init_db.py             # Database initialization script
 │   └── agrisight.db           # SQLite database file (auto-created)
 ├── report/
-│   ├── agrisight_report.tex
-│   └── agrisight_report.pdf
+│   ├── agrisight_report.docx   # Primary — 6-chapter academic format
+│   ├── agrisight_report.tex    # Alternative — LaTeX source
+│   └── agrisight_report.pdf    # Alternative — LaTeX compiled
 └── requirements.txt
 ```
 

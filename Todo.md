@@ -243,24 +243,18 @@ All tasks organized by phase. Check off items as you complete them.
 
 ## Phase 13 — Report Writing ✅
 
-> **Compiled with Tectonic** → `report/agrisight_report.pdf` (1.1 MB). 12 sections, all 16 charts, Python code listings, academic formatting.
+> **`report/agrisight_report.pdf`** (569 KB, 896-line LaTeX source). English, 6-chapter academic format, all 16 figures + code listings.
 
-- [x] Set up LaTeX project: `report/agrisight_report.tex` with `ctex` article class (Chinese + English)
-- [x] Create `report/figures/` — all 16 PNG charts copied from `analysis/charts/`
-- [x] Section 1: Introduction — background, objectives, platform evaluation (JD vs 1688 vs Suning)
-- [x] Section 2: Data Collection — scraping methodology, 55 keywords, 13 fields, code listing
-- [x] Section 3: Data Cleaning — 9-step pipeline, before/after table, code listing
-- [x] Section 4: Descriptive Analysis — category stats table, key findings, 4 figures
-- [x] Section 5: Correlation Analysis — Pearson matrix, heatmap, scatter plots, interpretation
-- [x] Section 6: Regression Analysis — OLS summary table, RF metrics, feature importance, code
-- [x] Section 7: Cluster Analysis — K=4 segments table, elbow plot, scatter + radar charts
-- [x] Section 8: PCA — explained variance table, PC1 loadings, scree + top20 charts
-- [x] Section 9: Web System — architecture table, 11 API endpoints, FastAPI + Vue 3 code listings
-- [x] Section 10: Conclusions — 6 actionable seller recommendations
-- [x] Section 11: LLM Tool Usage — per-phase AI assistance table with manual validation notes
-- [x] Section 12: References — 9 cited sources (scikit-learn, FastAPI, Vue, ECharts, etc.)
-- [x] Compile: `tectonic -X compile agrisight_report.tex` → 0 errors
-- [x] Output: `report/agrisight_report.pdf` (well over 2,000 words)
+- [x] Chapter 1: Requirements Analysis — background, target users, 4 objectives, 7 main functions, performance table
+- [x] Chapter 2: Outline Design — 3-tier architecture, module hierarchy, data flow, 11 API endpoints, HMI (12 pages)
+- [x] Chapter 3: Detailed Design — platform evaluation, DB schema (18 cols), scraping code, cleaning pipeline, 3 algorithms (RF, K-Means, PCA) with code + tables
+- [x] Chapter 4: Test Report — 12 API tests, 12 frontend tests, E2E pipeline, 12 technical indicators
+- [x] Chapter 5: User Manual — requirements, 5-step install, 4 walkthroughs, figures
+- [x] Chapter 6: Project Summary — achievements table, 3 challenges, 8 skills, 6 key findings, 7 future improvements, LLM usage table
+- [x] All 16 charts embedded as \includegraphics with captions
+- [x] 5 formatted code blocks (scraper, cleaning, RF, K-Means, pipeline)
+- [x] 14 professional tables (booktabs)
+- [x] Output: `report/agrisight_report.pdf` (compiled with tectonic, 0 errors)
 
 ---
 
