@@ -10,6 +10,8 @@
 \usepackage{booktabs}                      % Professional tables
 \usepackage{listings}                      % Code snippets
 \usepackage{xcolor}                        % Colors
+\usepackage{url}                          % Line-breakable paths
+\urlstyle{same}
 \usepackage{hyperref}                      % Clickable links
 \usepackage{geometry}                      % Margins
 \usepackage{caption}                       % Figure/table captions
@@ -19,9 +21,15 @@
 \usepackage{titlesec}                      % Section formatting
 \usepackage{textcomp}                      % Special characters
 \usepackage{titling}                       % Title page customization
+\usepackage{tabularx}                      % Auto-width tables
+\usepackage{array}                         % Better column definitions
 
 \geometry{margin=2.5cm}
 \hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue}
+
+% Prevent overfull hboxes — allow more flexible line breaking
+\setlength{\emergencystretch}{1.5em}
+\tolerance=500
 
 % ---- Code listing style ----
 \definecolor{codebg}{RGB}{248,248,248}
@@ -53,8 +61,8 @@
 % ---- Header/footer ----
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{AgriSight — Agricultural E-commerce Sales Analysis \& Prediction System}
-\fancyhead[R]{Topic 3 — Medium Level}
+\fancyhead[L]{\footnotesize AgriSight — Agricultural E-commerce Sales Analysis \& Prediction}
+\fancyhead[R]{\footnotesize Topic 3 — Medium Level}
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 
@@ -132,15 +140,15 @@ The web system provides the following functional modules:
 \begin{table}[H]
   \centering
   \caption{Project Performance Against Requirements}
-  \begin{tabular}{@{}lccc@{}}
+  \begin{tabular}{@{}p{2.8cm} p{2cm} p{6.5cm} p{2.3cm}@{}}
     \toprule
-    \textbf{Indicator} & \textbf{Requirement} & \textbf{Achieved} & \textbf{Status} \\
+    \textbf{Indicator} & \textbf{Req.} & \textbf{Achieved} & \textbf{Status} \\
     \midrule
-    Data Records            & $\ge$ 1,500    & 3,000 raw / 2,921 cleaned & Exceeded \\
+    Data Records            & $\ge$ 1,500    & 3,000 raw --- 2,921 cleaned & Exceeded \\
     Analysis Methods        & $\ge$ 4        & 5 (Descriptive, Correlation, Regression, Clustering, PCA) & Exceeded \\
     Charts                  & $\ge$ 9        & 16 (PNG export + web render) & Exceeded \\
     Web System Modules      & 7 required     & 10 implemented & Exceeded \\
-    Prediction Model R²     & $>$ 0.50      & 0.709 (Random Forest, 100 trees) & Exceeded \\
+    Prediction Model R\textsuperscript{2} & $>$ 0.50 & 0.709 (Random Forest, 100 trees) & Exceeded \\
     API Response Time       & $<$ 500ms     & $<$ 100ms (SQLite, local) & Exceeded \\
     Report Word Count       & $\ge$ 2,000   & $\gg$ 2,000 (this document) & Exceeded \\
     \bottomrule
@@ -169,15 +177,15 @@ AgriSight adopts a classic three-tier architecture separating concerns across th
 \begin{table}[H]
   \centering
   \caption{Module Hierarchy and Dependencies}
-  \begin{tabular}{@{}llll@{}}
+  \begin{tabular}{@{}p{2.2cm} p{3.7cm} p{3.7cm} p{3.7cm}@{}}
     \toprule
     \textbf{Module} & \textbf{Key Files} & \textbf{Depends On} & \textbf{Provides} \\
     \midrule
-    Scraper         & \texttt{suning\_scraper.py}, \texttt{generate\_data.py} & requests, BeautifulSoup & \texttt{raw\_data.csv} (3,000 rows) \\
-    Data Cleaning   & \texttt{analysis/cleaning.py}     & pandas, numpy        & \texttt{cleaned\_data.csv}, SQLite import \\
-    Analysis Engine & \texttt{01\_descriptive.py} -- \texttt{05\_pca.py} & scipy, sklearn, statsmodels & Charts PNG, model .pkl files \\
-    Backend API     & \texttt{main.py}, \texttt{db.py}, \texttt{routes/} & FastAPI, SQLite, joblib & REST API (11 endpoints) \\
-    Frontend        & 12 × \texttt{.html} pages         & Vue 3 CDN, ECharts, Tailwind & User-facing dashboard \\
+    Scraper       & \path{suning_scraper.py}, \path{generate_data.py} & requests, BeautifulSoup & \path{raw_data.csv} (3,000 rows) \\
+    Data Cleaning & \path{analysis/cleaning.py} & pandas, numpy & \path{cleaned_data.csv}, SQLite import \\
+    Analysis Eng. & \path{01_descriptive.py} -- \path{05_pca.py} & scipy, sklearn, statsmodels & Charts PNG, model .pkl files \\
+    Backend API   & \path{main.py}, \path{db.py}, \path{routes/} & FastAPI, SQLite, joblib & REST API (11 endpoints) \\
+    Frontend      & 12 × \path{.html} pages & Vue 3 CDN, ECharts, Tailwind & User-facing dashboard \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -263,11 +271,11 @@ Three Chinese e-commerce platforms were systematically evaluated for data access
 \begin{table}[H]
   \centering
   \caption{Platform Accessibility Evaluation}
-  \begin{tabular}{@{}lccc@{}}
+  \begin{tabular}{@{}p{2.8cm} p{3cm} p{3cm} p{4.5cm}@{}}
     \toprule
     \textbf{Platform} & \textbf{Static HTML?} & \textbf{Login Required?} & \textbf{Verdict} \\
     \midrule
-    JD.com (京东)   & No (JS-rendered) & No (but blocks bots) & Inaccessible --- redirects to login \\
+    JD.com (京东)   & No (JS-rendered) & No (blocks bots) & Inaccessible --- redirects to login \\
     1688.com (阿里巴巴) & No & \textbf{Yes} & Inaccessible --- authentication wall \\
     Suning (苏宁易购) & Partially (names, SKUs, stores) & \textbf{No} & \textbf{Selected} \\
     \bottomrule
@@ -577,7 +585,7 @@ Testing was conducted at five levels to ensure system quality:
 \begin{table}[H]
   \centering
   \caption{API Endpoint Test Cases (12/12 Passed)}
-  \begin{tabular}{@{}cllll@{}}
+  \begin{tabular}{@{}clp{3.5cm}p{4cm}l@{}}
     \toprule
     \textbf{\#} & \textbf{Endpoint} & \textbf{Input} & \textbf{Expected Output} & \textbf{Result} \\
     \midrule
@@ -602,7 +610,7 @@ Testing was conducted at five levels to ensure system quality:
 \begin{table}[H]
   \centering
   \caption{Frontend Page Render Verification (12/12 Passed)}
-  \begin{tabular}{@{}cll@{}}
+  \begin{tabular}{@{}clp{7cm}@{}}
     \toprule
     \textbf{\#} & \textbf{Page} & \textbf{Verification Criteria} \\
     \midrule
@@ -647,7 +655,7 @@ The complete data pipeline was executed sequentially to verify integration:
 \begin{table}[H]
   \centering
   \caption{Multi-Dimensional Technical Indicators}
-  \begin{tabular}{@{}lll@{}}
+  \begin{tabular}{@{}lp{3cm}p{7cm}@{}}
     \toprule
     \textbf{Dimension} & \textbf{Indicator} & \textbf{Measured Value} \\
     \midrule
