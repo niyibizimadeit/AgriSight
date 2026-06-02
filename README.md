@@ -108,7 +108,6 @@ agrisight/
 │   ├── schema.sql             # 18-column products table DDL
 │   └── init_db.py             # Database bootstrap script
 ├── report/
-│   ├── agrisight_report.docx  # 6-chapter academic report
 │   ├── agrisight_report.tex   # LaTeX source
 │   ├── agrisight_report.pdf   # Compiled PDF
 │   └── figures/               # 16 chart PNGs for report
