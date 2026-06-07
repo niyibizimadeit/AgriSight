@@ -1,6 +1,6 @@
 """
 AgriSight — Agricultural Product Data Generator
-Phase 3: Generate 3,000+ realistic agricultural e-commerce records.
+Generating 3000 data records for 5 categories: Fruits, Vegetables, Grains & Oils, Tea, Fresh Produce.
 
 Suning prices/sales/reviews are JS-rendered and inaccessible via requests.
 This generator creates realistic data using:

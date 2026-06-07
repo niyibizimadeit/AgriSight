@@ -1,5 +1,5 @@
 """
-Phase 2 — Scraping Strategy & Target Selection: Test Scrape
+Scraping Strategy & Target Selection: Test Scrape
 
 Findings:
   - JD.com: Blocked. JS-rendered, anti-bot redirects, APIs return error 601.
