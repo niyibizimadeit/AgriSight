@@ -1,5 +1,5 @@
 """
-Phase 5 — Descriptive Statistical Analysis
+ Descriptive Statistical Analysis
 Computes summary statistics per category and generates charts 1–5.
 
 Output:
