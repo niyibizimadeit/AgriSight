@@ -1,177 +1,266 @@
-# AgriSight — Agricultural E-commerce Sales Analysis & Prediction System
+# 🌾 AgriSight — Agricultural E-Commerce Sales Analysis & Prediction
 
-> A data-driven web application that collects, analyzes, and visualizes agricultural product sales data from Suning (苏宁易购). Combines statistical analysis, machine learning, and an interactive web dashboard. Built as a graduation project for Data Analysis Training — Topic 3 (Medium Level).
+> A full-stack data analysis platform that scrapes, analyzes, and predicts sales for agricultural products on Suning (苏宁易购). Built with Python, FastAPI, Vue 3, and ECharts.
 
----
-
-## Project Overview
-
-AgriSight scrapes agricultural product listings from Suning, performs comprehensive analysis across five categories (Fruits, Vegetables, Grains & Oils, Tea, Fresh Produce), and presents findings through an interactive Vue 3 + ECharts dashboard backed by a FastAPI backend.
-
-**The system answers:**
-- Which product categories sell the most, and at what price points?
-- What factors most strongly influence sales volume?
-- How do products segment into market tiers?
-- Given product attributes, what sales volume can be expected?
+<p align="center">
+  <img src="screenshots/dashboard.png" alt="AgriSight Dashboard" width="800">
+</p>
 
 ---
 
-## Tech Stack
+## What is AgriSight?
 
-| Layer | Technology |
-|---|---|
-| Web Scraping | Python `requests`, `BeautifulSoup` |
-| Data Processing | `pandas`, `numpy` |
-| Statistical Analysis | `scipy`, `statsmodels` |
-| Machine Learning | `scikit-learn` (KMeans, RandomForest, PCA) |
-| Backend API | `FastAPI` — 11 REST endpoints |
-| Frontend | Vue 3 (CDN) + ECharts 5 + Tailwind CSS |
-| Database | SQLite (zero-config, portable) |
-| Environment | Python 3.13+, virtual environment |
+AgriSight is an end-to-end data analysis system that answers real business questions about agricultural e-commerce:
+
+- **Which categories sell best?** — Vegetables lead with 1,874 avg sales at just ¥18.82
+- **What drives sales?** — Review count matters far more than discounts (r=+0.725 vs r=−0.013)
+- **How do products segment?** — 4 distinct market tiers from budget to premium
+- **Can we predict sales?** — Yes, with a Random Forest model achieving R² = 0.709
+
+The project scrapes 3,000+ product listings across 5 categories, cleans and analyzes the data through a 5-method pipeline, and presents everything in an interactive web dashboard.
 
 ---
 
-## Data Source
+## 📸 Features at a Glance
 
-- **Platform:** Suning (苏宁易购) — selected after systematic evaluation of JD.com (blocked) and 1688.com (login required)
-- **Categories:** 水果 (Fruits), 蔬菜 (Vegetables), 粮油 (Grains & Oils), 茶叶 (Tea), 生鲜 (Fresh Produce)
-- **Volume:** 3,000 raw records → 2,921 after cleaning
-- **Fields (13):** Product name, category, category_en, price, sales volume, review count, rating, origin, shipping location, store name, store level, promotion status, product URL
+### 📊 Interactive Dashboard
+The homepage brings together KPIs, category breakdowns, and sales distribution charts in one view.
+
+<p align="center">
+  <img src="screenshots/dashboard.png" alt="Homepage Dashboard" width="700">
+</p>
+
+### 📋 Product Explorer
+Browse and filter all 2,921 cleaned products. Includes a Seller Benchmark tool to compare store performance.
+
+<p align="center">
+  <img src="screenshots/products.png" alt="Product Data Table" width="700">
+</p>
+
+### 📈 Sales Analysis
+Four charts reveal sales patterns: bar chart by category, correlation heatmap, price distribution, and promotion impact.
+
+<p align="center">
+  <img src="screenshots/sales.png" alt="Sales Feature Analysis" width="700">
+</p>
+
+### 🔍 Influence Factors
+See what actually drives sales. Review count dominates at 69.6% feature importance — not discounts or price.
+
+<p align="center">
+  <img src="screenshots/Impact.png" alt="Feature Importance Analysis" width="700">
+</p>
+
+<p align="center">
+  <img src="screenshots/factors.png" alt="Regression Analysis" width="700">
+</p>
+
+### 🧩 Product Clustering (K-Means, K=4)
+Products naturally fall into four market segments. The radar chart compares cluster profiles at a glance.
+
+<p align="center">
+  <img src="screenshots/clusters.png" alt="Product Clustering" width="700">
+</p>
+
+### 🏆 PCA Competitiveness Ranking
+A composite score (0–100) ranks the top 20 products by overall competitiveness across all dimensions.
+
+<p align="center">
+  <img src="screenshots/PCA.png" alt="PCA Competitiveness Leaderboard" width="700">
+</p>
+
+### 🔮 Sales Predictor
+Enter product attributes and get an instant sales prediction with a confidence range, powered by the Random Forest model.
+
+<p align="center">
+  <img src="screenshots/predicting.png" alt="Sales Prediction Tool" width="700">
+</p>
+
+### 🌍 Origin Distribution
+Explore where products ship from, toggleable by category. Reveals geographic production patterns.
+
+<p align="center">
+  <img src="screenshots/origins.png" alt="Origin Distribution Map" width="700">
+</p>
+
+### 📢 Promotion Impact
+Side-by-side comparison of promoted vs non-promoted products, with sales lift percentages.
+
+<p align="center">
+  <img src="screenshots/Promotion Impact.png" alt="Promotion Impact Analysis" width="700">
+</p>
+
+### 💡 Actionable Tips
+Six data-backed recommendations for sellers, each with supporting evidence from the analysis.
+
+<p align="center">
+  <img src="screenshots/Tips.png" alt="Operational Suggestions" width="700">
+</p>
 
 ---
 
-## System Modules (10 total)
-
-| # | Module | Description |
-|---|---|---|
-| 1 | Homepage Overview | KPI cards + bar/pie charts + category breakdown table |
-| 2 | Product Data List | 2,921-product filterable table + Seller Benchmark tool |
-| 3 | Sales Feature Analysis | 4 charts: sales bar, correlation heatmap, price, promo impact |
-| 4 | Influence Factor Analysis | Feature importance + regression metrics (R²=0.709) |
-| 5 | Product Clustering | K-Means (K=4) segments with radar chart comparison |
-| 6 | PCA Competitiveness | Top 20 leaderboard ranked by composite score (0–100) |
-| 7 | Sales Prediction | Interactive form → Random Forest predicted sales + range |
-| 8 | Origin Distribution | Bar chart of product origins by category (toggleable) |
-| 9 | Promotion Impact | Promoted vs non-promoted comparison + sales lift % |
-| 10 | Operational Suggestions | 6 data-backed seller recommendations with evidence |
-
-Bonus pages: Data Cleaning documentation, Analysis Conclusions.
-
----
-
-## Project Structure
+## 🏗️ Project Structure
 
 ```
 agrisight/
 ├── scraper/
-│   ├── suning_scraper.py      # Multi-keyword scraper (55 keywords)
-│   ├── generate_data.py       # Realistic dataset generator (3,000 records)
-│   └── test_scrape.py         # Phase 2 validation script
+│   ├── suning_scraper.py        # Multi-keyword scraper (55 keywords)
+│   ├── generate_data.py         # Realistic dataset generator (3,000 records)
+│   └── test_scrape.py           # Scraping validation script
+│
 ├── data/
-│   ├── raw/                   # raw_data.csv (3,000 records)
-│   ├── cleaned/               # cleaned_data.csv, final_data.csv, descriptive_summary.csv
-│   └── agrisight.db           # SQLite database (2,921 records)
+│   ├── raw/                     # raw_data.csv (3,000 records)
+│   ├── cleaned/                 # cleaned_data.csv, final_data.csv
+│   └── agrisight.db             # SQLite database (2,921 clean records)
+│
 ├── analysis/
-│   ├── charts/                # 16 exported PNG charts
-│   ├── cleaning.py            # Phase 4: 9-step data cleaning pipeline
-│   ├── 01_descriptive.py      # Phase 5: Summary stats + 5 charts
-│   ├── 02_correlation.py      # Phase 6: Pearson matrix + 4 charts
-│   ├── 03_regression.py       # Phase 7: OLS + Random Forest + 2 charts
-│   ├── 04_clustering.py       # Phase 8: K-Means (K=4) + 3 charts
-│   └── 05_pca.py              # Phase 9: PCA competitiveness + 2 charts
+│   ├── charts/                  # 16 exported PNG charts
+│   ├── cleaning.py              # 9-step data cleaning pipeline
+│   ├── 01_descriptive.py        # Summary statistics + 5 charts
+│   ├── 02_correlation.py        # Pearson matrix + 4 charts
+│   ├── 03_regression.py         # OLS + Random Forest + 2 charts
+│   ├── 04_clustering.py         # K-Means (K=4) + 3 charts
+│   └── 05_pca.py                # PCA competitiveness + 2 charts
+│
 ├── backend/
-│   ├── main.py                # FastAPI app (uvicorn backend.main:app)
-│   ├── db.py                  # SQLite query helpers
+│   ├── main.py                  # FastAPI app entry point
+│   ├── db.py                    # SQLite query helpers
 │   ├── routes/
-│   │   ├── overview.py        # GET /api/overview
-│   │   ├── products.py        # GET /api/products
-│   │   ├── analysis.py        # 8 analysis endpoints
-│   │   └── predict.py         # POST /api/predict
+│   │   ├── overview.py          # GET /api/overview
+│   │   ├── products.py          # GET /api/products
+│   │   ├── analysis.py          # 8 analysis endpoints
+│   │   └── predict.py           # POST /api/predict
 │   └── models/
-│       ├── rf_model.pkl       # Random Forest (R²=0.709)
-│       └── label_encoder.pkl  # Category encoder
+│       ├── rf_model.pkl         # Trained Random Forest (R²=0.709)
+│       └── label_encoder.pkl    # Category label encoder
+│
 ├── frontend/
-│   ├── index.html             # Vue 3 homepage dashboard
-│   └── pages/                 # 11 standalone Vue 3 pages
-│       ├── products.html      # Filterable product table + benchmark
-│       ├── prediction.html    # Sales prediction form + price optimizer
-│       ├── sales-analysis.html
+│   ├── index.html               # Main dashboard (Vue 3 + ECharts)
+│   └── pages/                   # 11 standalone module pages
+│       ├── products.html        # Filterable table + benchmark
+│       ├── prediction.html      # Sales predictor form
+│       ├── sales-analysis.html  # Sales distribution charts
 │       ├── influence-factors.html
-│       ├── clustering.html
-│       ├── pca.html
-│       ├── origin-map.html
-│       ├── promotion.html
-│       ├── suggestions.html
-│       ├── cleaning.html
-│       └── conclusions.html
+│       ├── clustering.html      # K-Means + radar chart
+│       ├── pca.html             # Competitiveness leaderboard
+│       ├── origin-map.html      # Geographic origin charts
+│       ├── promotion.html       # Promotion impact comparison
+│       ├── suggestions.html     # Seller recommendations
+│       ├── cleaning.html        # Data cleaning docs
+│       └── conclusions.html     # Analysis conclusions
+│
 ├── db/
-│   ├── schema.sql             # 18-column products table DDL
-│   └── init_db.py             # Database bootstrap script
+│   ├── schema.sql               # Database table DDL
+│   └── init_db.py               # Database bootstrap script
+│
 ├── report/
-│   ├── agrisight_report.tex   # LaTeX source
-│   ├── agrisight_report.pdf   # Compiled PDF
-│   └── figures/               # 16 chart PNGs for report
-├── requirements.txt           # 14 Python dependencies
-├── .env                       # DB_PATH=data/agrisight.db
+│   ├── agrisight_report.tex     # LaTeX source
+│   ├── agrisight_report.pdf     # Compiled report PDF
+│   └── figures/                 # Chart PNGs for report
+│
+├── screenshots/                 # Application screenshots
+├── requirements.txt             # Python dependencies
+├── .env                         # DB_PATH=data/agrisight.db
 └── .gitignore
 ```
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.10 or newer
+- A modern web browser (Chrome, Firefox, Edge, Safari)
+
+### Setup (3 steps)
 
 ```bash
-# 1. Environment
-python3 -m venv venv && source venv/bin/activate
+# 1. Set up Python environment
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 
-# 2. Generate data (if raw data not present)
+# 2. Generate the dataset (if data/raw/ is empty)
 python scraper/generate_data.py
 
-# 3. Run analysis pipeline
+# 3. Run the analysis pipeline
 python analysis/cleaning.py
 python analysis/01_descriptive.py
 python analysis/02_correlation.py
 python analysis/03_regression.py
 python analysis/04_clustering.py
 python analysis/05_pca.py
+```
 
-# 4. Start backend
+### Launch the App
+
+```bash
+# Terminal 1 — Start the backend API
 uvicorn backend.main:app --reload --port 8000
 
-# 5. Open frontend
+# Terminal 2 — Open the frontend in your browser
 open frontend/index.html
 ```
 
+> **Note:** The frontend fetches data from `http://localhost:8000`. Make sure the backend is running before opening the frontend.
+
 ---
 
-## Key Analytical Findings
+## 🧪 Tech Stack
 
-| Finding | Evidence |
+| Layer | Technology | Why |
+|---|---|---|
+| **Scraping** | Python + `requests` + `BeautifulSoup` | Reliable HTML parsing for Suning listings |
+| **Data Processing** | `pandas` + `numpy` | Fast, expressive data manipulation |
+| **Statistics** | `scipy` + `statsmodels` | Pearson correlation, OLS regression |
+| **Machine Learning** | `scikit-learn` | K-Means clustering, Random Forest, PCA |
+| **Backend API** | `FastAPI` | 11 REST endpoints, auto-generated docs |
+| **Frontend** | Vue 3 (CDN) + ECharts 5 + Tailwind CSS | Reactive UI, no build step needed |
+| **Database** | SQLite | Zero-config, portable, 2,921 records |
+
+---
+
+## 📊 Data at a Glance
+
+| Detail | Value |
 |---|---|
-| **Reviews > Discounts** | Review count: r=+0.725 with sales, 69.6% RF importance. Promotion: r=−0.013, p=0.76 (not significant) |
-| **Vegetables = Volume King** | 1,874 avg sales at ¥18.82 — 3.6× more than Tea |
-| **Tea = Premium Niche** | ¥103.25 avg price, highest rating (4.46) |
-| **4 Market Segments** | Mid-range Stable (41%), Low Engagement (36%), Premium Niche (12%), Budget High-Volume (12%) |
-| **RF R² = 0.709** | Random Forest explains 71% of sales variance (OLS: 59.8%) |
+| **Source** | Suning (苏宁易购) |
+| **Categories** | 水果, 蔬菜, 粮油, 茶叶, 生鲜 (5 total) |
+| **Raw Records** | 3,000 |
+| **After Cleaning** | 2,921 (97.4% retention) |
+| **Fields** | 13 core + 5 derived |
+
+**Why Suning?** JD.com blocked automated access and 1688.com required login. Suning offered clean, publicly accessible product listings ideal for analysis.
 
 ---
 
-## Academic Requirements
+## 🔑 Key Findings
 
-| Requirement | Minimum | Delivered | Status |
+| Finding | The Evidence |
+|---|---|
+| **Reviews beat discounts** | Review count correlates with sales at r=+0.725 and accounts for 69.6% of feature importance. Promotion has r=−0.013 (p=0.76) — not statistically significant. |
+| **Vegetables are the volume play** | 1,874 avg sales at ¥18.82/unit — 3.6× more volume than Tea. Low price, high turnover. |
+| **Tea is the premium niche** | ¥103.25 avg price, highest rating (4.46/5). Lower volume but higher margins. |
+| **Four distinct market segments** | Mid-range Stable (41%), Low Engagement (36%), Premium Niche (12%), Budget High-Volume (12%) |
+| **Model explains 71% of variance** | Random Forest R²=0.709 vs OLS R²=0.598 — tree-based models capture non-linear patterns better |
+
+---
+
+## ✅ Academic Deliverables
+
+| Requirement | Target | Delivered | Status |
 |---|---|---|---|
 | Data records | ≥ 1,500 | 3,000 raw / 2,921 cleaned | ✅ 2× exceeded |
-| Data fields | 12 recommended | 13 + 5 derived | ✅ |
-| Analysis methods | ≥ 4 | 5 (Desc, Corr, Reg, Clust, PCA) | ✅ |
-| Charts | ≥ 9 | 16 (PNG + ECharts) | ✅ |
+| Data fields | ~12 | 13 + 5 derived | ✅ |
+| Analysis methods | ≥ 4 | 5 (Descriptive, Correlation, Regression, Clustering, PCA) | ✅ |
+| Charts | ≥ 9 | 16 PNG + 11 interactive ECharts | ✅ |
 | Web modules | 7 | 10 (3 bonus) | ✅ |
 | Prediction model | Any method | Random Forest, R²=0.709 | ✅ |
-| Report | ≥ 2,000 words | 6-chapter report (.docx + .pdf) | ✅ |
-| Defense PPT | Required | Phase 14 pending | ⏳ |
+| Report | ≥ 2,000 words | 6-chapter report (PDF + LaTeX) | ✅ |
+| Defense presentation | Required | Pending | ⏳ |
 
 ---
 
-## Current Phase
+## 📝 License
 
-**Phases 1–13 complete.** Phase 14 (Defense PPT) pending.
+This project is an academic graduation project for Data Analysis Training — Topic 3 (Medium Level).
